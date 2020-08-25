@@ -47,6 +47,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private EditText et_content;
     private TextView btn_send;
     private TextView tv_content;
+    private TextView btn_disconnect;
     private ChatMessageReceiver chatMessageReceiver;
 
     private ServiceConnection serviceConnection = new ServiceConnection() {
@@ -126,6 +127,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         et_content = (EditText) findViewById(R.id.edit_content);
         btn_send.setOnClickListener(this);
         tv_content = (TextView) findViewById(R.id.tv_content);
+        btn_disconnect =findViewById(R.id.btn_disconnect);
+        btn_disconnect.setOnClickListener(this);
     }
     private void initView() {
         //监听输入框的变化
@@ -165,15 +168,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     jWebSClientService.sendMsg(content);
 
                     //暂时将发送的消息加入消息列表，实际以发送成功为准（也就是服务器返回你发的消息时）
-//                    ChatMessage chatMessage=new ChatMessage();
-//                    chatMessage.setContent(content);
-//                    chatMessage.setIsMeSend(1);
-//                    chatMessage.setIsRead(1);
-//                    chatMessage.setTime(System.currentTimeMillis()+"");
-//                    chatMessageList.add(chatMessage);
+                    tv_content.append(Spanny
+                            .spanText("我 " + DateUtils.formatDateTime(getBaseContext(), System.currentTimeMillis(),
+                                    DateUtils.FORMAT_SHOW_TIME) + "\n",
+                                    new ForegroundColorSpan(
+                                            ContextCompat.getColor(getBaseContext(), R.color.colorPrimary))));
+                    tv_content.append(content + "\n\n");
                     et_content.setText("");
                 } else {
                     Toast.makeText(getBaseContext(), "连接已断开，请稍等或重启App哟", Toast.LENGTH_SHORT).show();
+                }
+                break;
+            case R.id.btn_disconnect:
+                if (client != null) {
+                    jWebSClientService.closeConnect();
                 }
                 break;
             default:

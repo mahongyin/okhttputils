@@ -268,7 +268,7 @@ private static String TAG ="mhylog";
     /**
      * 断开连接
      */
-    private void closeConnect() {
+    public void closeConnect() {
         if (client != null) {
             client.stopConnect();
             client = null;
