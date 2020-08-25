@@ -48,7 +48,7 @@ public class WebSocketClientService extends Service {
 
         @Override
         public int onStartCommand(Intent intent, int flags, int startId) {
-            startForeground(GRAY_SERVICE_ID, new MyNotification());
+            startForeground(GRAY_SERVICE_ID, new Notification());
             stopForeground(true);
             stopSelf();
             return super.onStartCommand(intent, flags, startId);
@@ -113,9 +113,7 @@ public class WebSocketClientService extends Service {
         acquireWakeLock();
         return START_STICKY;
     }
-    public static class MyNotification extends Notification{
 
-    }
     private Notification getNotification(){
         // 获取系统 通知管理 服务
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -222,16 +220,9 @@ private static String TAG ="mhylog";
     };
 
     /**
-     * 初始化websocket连接
+     * 初始化websocket连接  连接websocket
      */
     private void initSocketClient() {
-        connect();
-    }
-
-    /**
-     * 连接websocket
-     */
-    private void connect() {
         if (client != null) {
             client.stopConnect();
             client = null;
