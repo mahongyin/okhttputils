@@ -13,6 +13,15 @@
     <!-- 这个权限用于访问GPS定位 -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_GPS" />
+
+    <!-- 解锁屏幕需要的权限 -->
+    <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
+    <!-- 申请电源锁需要的权限 -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!--震动权限-->
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <!--android 9.0之后使用前台服务，需要添加权限-->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 <!--    android:networkSecurityConfig="@xml/network_security_config"-->
     <application
         android:name="com.mhy.sample_okhttp.MyApplication"
@@ -21,7 +30,16 @@
         android:label="@string/app_name"
 
         android:theme="@style/AppTheme" >
-        <activity android:name="com.mhy.websoket.SocketActivity">
+        <activity android:name="com.mhy.websoket.SocketActivity"
+            android:windowSoftInputMode="stateHidden">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name="com.mhy.websoket.MainActivity"
+            android:windowSoftInputMode="stateHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -34,6 +52,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service
+            android:name="com.mhy.websoket.WebSocketClientService"
+            android:enabled="true"
+            android:exported="true" />
+        <service
+            android:name="com.mhy.websoket.WebSocketClientService$GrayInnerService"
+            android:enabled="true"
+            android:exported="false"
+            android:process=":gray" />
+
     </application>
 
 </manifest>
