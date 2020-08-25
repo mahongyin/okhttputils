@@ -31,6 +31,7 @@
 
         android:theme="@style/AppTheme" >
         <activity android:name="com.mhy.websoket.SocketActivity"
+            android:label="WebSocket"
             android:windowSoftInputMode="stateHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -39,6 +40,7 @@
             </intent-filter>
         </activity>
         <activity android:name="com.mhy.websoket.MainActivity"
+            android:label="MainSocket"
             android:windowSoftInputMode="stateHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
