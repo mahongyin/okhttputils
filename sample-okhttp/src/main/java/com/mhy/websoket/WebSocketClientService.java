@@ -48,7 +48,7 @@ public class WebSocketClientService extends Service {
 
         @Override
         public int onStartCommand(Intent intent, int flags, int startId) {
-            startForeground(GRAY_SERVICE_ID, new Notification());
+            startForeground(GRAY_SERVICE_ID, new MyNotification());
             stopForeground(true);
             stopSelf();
             return super.onStartCommand(intent, flags, startId);
@@ -113,7 +113,9 @@ public class WebSocketClientService extends Service {
         acquireWakeLock();
         return START_STICKY;
     }
+    public static class MyNotification extends Notification{
 
+    }
     private Notification getNotification(){
         // 获取系统 通知管理 服务
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -220,9 +222,16 @@ private static String TAG ="mhylog";
     };
 
     /**
-     * 初始化websocket连接  连接websocket
+     * 初始化websocket连接
      */
     private void initSocketClient() {
+        connect();
+    }
+
+    /**
+     * 连接websocket
+     */
+    public void connect() {
         if (client != null) {
             client.stopConnect();
             client = null;
@@ -249,8 +258,8 @@ private static String TAG ="mhylog";
     public void sendMsg(String msg) {
         if (client != null && client.isWsConnected()) {
             boolean isSend = client.sendMessage(msg);
-            if (isSend) {
-            showOrHideInputMethod();}
+//            if (isSend) {
+//            showOrHideInputMethod();}
         } else {
             Toast.makeText(getBaseContext(), "请先连接服务器", Toast.LENGTH_SHORT).show();
         }

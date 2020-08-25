@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private EditText et_content;
     private TextView btn_send;
     private TextView tv_content;
-    private TextView btn_disconnect;
+    private TextView btn_disconnect,btn_connect;
     private ChatMessageReceiver chatMessageReceiver;
 
     private ServiceConnection serviceConnection = new ServiceConnection() {
@@ -129,6 +129,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tv_content = (TextView) findViewById(R.id.tv_content);
         btn_disconnect =findViewById(R.id.btn_disconnect);
         btn_disconnect.setOnClickListener(this);
+        btn_connect =findViewById(R.id.btn_connect);
+        btn_connect.setOnClickListener(this);
     }
     private void initView() {
         //监听输入框的变化
@@ -179,9 +181,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Toast.makeText(getBaseContext(), "连接已断开，请稍等或重启App哟", Toast.LENGTH_SHORT).show();
                 }
                 break;
-            case R.id.btn_disconnect:
+            case R.id.btn_connect:
+                if (client != null) {
+                    jWebSClientService.connect();
+                }
+                break;
+                case R.id.btn_disconnect:
                 if (client != null) {
                     jWebSClientService.closeConnect();
+//                    client=null;
                 }
                 break;
             default:
@@ -189,7 +197,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (null!=client){
+            client=null;
+        }
+        stopService(new Intent(mContext, WebSocketClientService.class));
+    }
 
     /**
      * 检测是否开启通知
