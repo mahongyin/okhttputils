@@ -77,16 +77,16 @@ public class SocketActivity extends AppCompatActivity {
             //Log.i("mhyLog收",bytes.base64());
             byte[] bytes1 = bytes.toByteArray();
             imv.setImageBitmap(ByteStringUtils.bytes2Bitmap(bytes1));
-            File ofile = ByteStringUtils.bytes2File(bytes1, path, begin + ".png");
-            if (null != ofile) {
-                Log.i("mhyLog", ofile.getAbsolutePath());
-            }
+//            File ofile = ByteStringUtils.bytes2File(bytes1, path, begin + ".png");
+//            if (null != ofile) {
+//                Log.i("mhyLog", ofile.getAbsolutePath());
+//            }
             try {
                 File file = new File(path, begin + ".png");
                 Log.i("mhyLog", path);
                 FileOutputStream outputStream = new FileOutputStream(file);
                 BufferedOutputStream bos = new BufferedOutputStream(outputStream);
-                //bytes.write(bos); bos.flush();
+                bytes.write(bos); bos.flush();
                 // 用时毫秒
 //                System.out.println(System.currentTimeMillis() - begin);// 78
                 Log.i("mhyLog", "时间" + (System.currentTimeMillis() - begin));
