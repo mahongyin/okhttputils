@@ -55,7 +55,12 @@
         android:drawableTop="@drawable/ic_send_grey"
         android:text="发送"
         android:textColor="#9E9E9E" />
-
+<ImageView
+    android:layout_centerInParent="true"
+    android:id="@+id/imv"
+    android:scaleType="fitXY"
+    android:layout_width="200dp"
+    android:layout_height="200dp"/>
     <EditText
         android:id="@+id/edit_content"
         android:layout_width="match_parent"

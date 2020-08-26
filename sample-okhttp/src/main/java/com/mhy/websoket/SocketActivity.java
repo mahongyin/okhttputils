@@ -21,19 +21,19 @@ import android.view.View.OnClickListener;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.mhy.http.okhttp.utils.ByteStringUtils;
 import com.mhy.http.websocket.WebSocketUtils;
 import com.mhy.http.websocket.listener.WebSoketListener;
-import com.mhy.sample_okhttp.MainActivity;
 import com.mhy.sample_okhttp.R;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.concurrent.TimeUnit;
 
@@ -47,7 +47,7 @@ public class SocketActivity extends AppCompatActivity {
     private TextView btn_send, btn_clear, tv_content;
     private Button btn_connect, btn_disconnect;
     private EditText edit_url, edit_content;
-
+    private ImageView imv;
     private WebSocketUtils webSocketUtils;
     private WebSoketListener webSoketListener = new WebSoketListener() {
         @Override
@@ -70,28 +70,29 @@ public class SocketActivity extends AppCompatActivity {
 
         @Override
         public void onMessage(ByteString bytes) {
+            // 开始时间
+            long begin = System.currentTimeMillis();
+//            String path = getExternalCacheDir().getAbsolutePath()+"/" +begin+ ".png";
+            String path = getExternalCacheDir().getAbsolutePath();
+            //Log.i("mhyLog收",bytes.base64());
+            byte[] bytes1 = bytes.toByteArray();
+            imv.setImageBitmap(ByteStringUtils.bytes2Bitmap(bytes1));
+            File ofile = ByteStringUtils.bytes2File(bytes1, path, begin + ".png");
+            if (null != ofile) {
+                Log.i("mhyLog", ofile.getAbsolutePath());
+            }
             try {
-
-//                https://www.cnblogs.com/shuaiguoguo/p/8883862.html
-//                FileInputStream inputStream = new FileInputStream("f://滑板//HEEL_FLIP.mp4");
-//                BufferedInputStream bis = new BufferedInputStream(inputStream);
-                String path =getExternalCacheDir().getAbsolutePath()+"/download/file.png";
-                Log.i("mhyLog",path);
-                FileOutputStream outputStream = new FileOutputStream(path);
+                File file = new File(path, begin + ".png");
+                Log.i("mhyLog", path);
+                FileOutputStream outputStream = new FileOutputStream(file);
                 BufferedOutputStream bos = new BufferedOutputStream(outputStream);
-//                int len;
-//                byte[] bs = new byte[1024];
-//                // 开始时间
-//                long begin = System.currentTimeMillis();
-//                while ((len = bis.read(bs)) != -1) {
-//                    bos.write(bs, 0, len);
-//                }
-//                // 用时毫秒
+                //bytes.write(bos); bos.flush();
+                // 用时毫秒
 //                System.out.println(System.currentTimeMillis() - begin);// 78
-                bytes.write(bos);
-
-//                bis.close();
+                Log.i("mhyLog", "时间" + (System.currentTimeMillis() - begin));
                 bos.close();
+                outputStream.close();
+
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -203,35 +204,42 @@ public class SocketActivity extends AppCompatActivity {
                 }
             }
         });
-btn_send.setOnLongClickListener(new View.OnLongClickListener() {
-    @Override
-    public boolean onLongClick(View v) {
-        File file = new File(Environment.getExternalStorageDirectory(), "parser0.jpg");
-        if (!file.exists()) {
-            Toast.makeText(SocketActivity.this, "文件不存在，请修改文件路径", Toast.LENGTH_SHORT).show();
-            return true;
-        }
-        if (webSocketUtils != null && webSocketUtils.isWsConnected()) {
-            try {
-                FileInputStream  inputStream = new FileInputStream(file);
+        btn_send.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                File file = new File(Environment.getExternalStorageDirectory(), "parser0.jpg");
+                if (!file.exists()) {
+                    Toast.makeText(SocketActivity.this, "文件不存在，请修改文件路径", Toast.LENGTH_SHORT).show();
+                    return true;
+                }
+                if (webSocketUtils != null && webSocketUtils.isWsConnected()) {
+                    try {
+                        FileInputStream inputStream = new FileInputStream(file);
+//
+                        BufferedInputStream bis = new BufferedInputStream(inputStream);
+//String b64=Base64Utils.encode(Base64Utils.getBytesByFile(file.getAbsolutePath()));
+//Log.i("mhyLog",b64);
+//                        ByteString data=ByteString.decodeBase64(b64);
 
-            BufferedInputStream bis = new BufferedInputStream(inputStream);
+                        ByteString data2 = ByteString.read(bis, (int) file.length());
+                        boolean isSend = webSocketUtils.sendMessage(data2);
+                        if (isSend) {
+                            tv_content.append(Spanny.spanText(
+                                    "我 " + DateUtils.formatDateTime(getBaseContext(), System.currentTimeMillis(),
+                                            DateUtils.FORMAT_SHOW_TIME) + "\n", new ForegroundColorSpan(
+                                            ContextCompat.getColor(getBaseContext(), android.R.color.holo_green_light))));
+                            tv_content.append("发图" + "\n\n");
+                        }
+                        bis.close();
+                        inputStream.close();
 
-            boolean isSend = webSocketUtils.sendMessage(ByteString.read(bis,1024));
-            if (isSend) {
-                tv_content.append(Spanny.spanText(
-                        "我 " + DateUtils.formatDateTime(getBaseContext(), System.currentTimeMillis(),
-                                DateUtils.FORMAT_SHOW_TIME) + "\n", new ForegroundColorSpan(
-                                ContextCompat.getColor(getBaseContext(), android.R.color.holo_green_light))));
-                tv_content.append("content" + "\n\n");}
-            bis.close();
-            } catch (Exception e) {
-            e.printStackTrace();
-        }
-        }
-        return true;
-    }
-});
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                return true;
+            }
+        });
         btn_clear.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -248,6 +256,7 @@ btn_send.setOnLongClickListener(new View.OnLongClickListener() {
         btn_disconnect = (Button) findViewById(R.id.btn_disconnect);
         edit_url = (EditText) findViewById(R.id.edit_url);
         edit_content = (EditText) findViewById(R.id.edit_content);
+        imv = findViewById(R.id.imv);
 
     }
 
