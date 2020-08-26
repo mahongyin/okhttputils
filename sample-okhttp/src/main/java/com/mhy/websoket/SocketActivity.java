@@ -25,7 +25,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.mhy.http.okhttp.utils.ByteStringUtils;
+import com.mhy.http.websocket.ByteStringUtils;
 import com.mhy.http.websocket.WebSocketUtils;
 import com.mhy.http.websocket.listener.WebSoketListener;
 import com.mhy.sample_okhttp.R;
@@ -69,34 +69,43 @@ public class SocketActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onMessage(ByteString bytes) {
+        public void onMessage(final ByteString bytes) {
             // 开始时间
-            long begin = System.currentTimeMillis();
+            final long begin = System.currentTimeMillis();
 //            String path = getExternalCacheDir().getAbsolutePath()+"/" +begin+ ".png";
-            String path = getExternalCacheDir().getAbsolutePath();
+            final String path = getExternalCacheDir().getAbsolutePath();
             //Log.i("mhyLog收",bytes.base64());
             byte[] bytes1 = bytes.toByteArray();
+//            byte[] bytes1 = ByteStringUtils.toBytes(bytes);
             imv.setImageBitmap(ByteStringUtils.bytes2Bitmap(bytes1));
-//            File ofile = ByteStringUtils.bytes2File(bytes1, path, begin + ".png");
-//            if (null != ofile) {
-//                Log.i("mhyLog", ofile.getAbsolutePath());
-//            }
-            try {
-                File file = new File(path, begin + ".png");
-                Log.i("mhyLog", path);
-                FileOutputStream outputStream = new FileOutputStream(file);
-                BufferedOutputStream bos = new BufferedOutputStream(outputStream);
-                bytes.write(bos); bos.flush();
-                // 用时毫秒
-//                System.out.println(System.currentTimeMillis() - begin);// 78
-                Log.i("mhyLog", "时间" + (System.currentTimeMillis() - begin));
-                bos.close();
-                outputStream.close();
-
-
-            } catch (Exception e) {
-                e.printStackTrace();
+            File ofile = ByteStringUtils.bytes2File(bytes1, path, begin + ".png");
+            if (null != ofile) {
+                Log.i("mhyLog", ofile.getAbsolutePath());
             }
+            final ByteString bytes2 = bytes;
+            new Thread(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        File file = new File(path, begin + "t.png");
+                        Log.i("mhyLog", file.getAbsolutePath());
+                        FileOutputStream outputStream = new FileOutputStream(file);
+                        BufferedOutputStream bos = new BufferedOutputStream(outputStream);
+                        bytes2.write(bos);
+                        bos.flush();
+                        // 用时毫秒
+//                System.out.println(System.currentTimeMillis() - begin);// 78
+                        Log.i("mhyLog", "时间" + (System.currentTimeMillis() - begin));
+                        bos.close();
+                        outputStream.close();
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
+
             //接收到 文件
         }
 
@@ -220,7 +229,6 @@ public class SocketActivity extends AppCompatActivity {
 //String b64=Base64Utils.encode(Base64Utils.getBytesByFile(file.getAbsolutePath()));
 //Log.i("mhyLog",b64);
 //                        ByteString data=ByteString.decodeBase64(b64);
-
                         ByteString data2 = ByteString.read(bis, (int) file.length());
                         boolean isSend = webSocketUtils.sendMessage(data2);
                         if (isSend) {

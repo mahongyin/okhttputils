@@ -1,4 +1,4 @@
-package com.mhy.http.okhttp.utils;
+package com.mhy.http.websocket;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -6,6 +6,7 @@ import android.text.TextUtils;
 import android.util.Base64;
 
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -14,6 +15,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+
+import okio.BufferedSink;
+import okio.BufferedSource;
+import okio.ByteString;
+import okio.Okio;
 
 /**
  * Created By Mahongyin
@@ -63,16 +69,16 @@ public class ByteStringUtils {
     }
 
     //将Byte数组转换成文件
-    public static File bytes2File(byte[] bytes, String outfilePath, String fileName) {
+    public static File bytes2File(byte[] bytes, String outDirPath, String fileName) {
         BufferedOutputStream bos = null;
         FileOutputStream fos = null;
         File file = null;
         try {
-            File dir = new File(outfilePath);
+            File dir = new File(outDirPath);
             if (!dir.exists() && dir.isDirectory()) {// 判断文件目录是否存在
                 dir.mkdirs();
             }
-            file = new File(outfilePath + "\\" + fileName);
+            file = new File(outDirPath + "/" + fileName);
             fos = new FileOutputStream(file);
             bos = new BufferedOutputStream(fos);
             bos.write(bytes);
@@ -195,4 +201,35 @@ public class ByteStringUtils {
     public static Bitmap bytes2Bitmap(byte[] bytes) {
         return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
     }
+
+    //获取请求数据包byte[]
+    public static byte[] toBytes(ByteString byteString) {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        BufferedSink bufferedSink = Okio.buffer(Okio.sink(bos));
+        try {
+//            bufferedSink.writeInt(byteString.size());
+            bufferedSink.write(byteString);
+            bufferedSink.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return bos.toByteArray();
+    }
+    public static ByteString toByteString(byte[] byteString) {
+        ByteArrayInputStream bos = new ByteArrayInputStream(byteString);
+        BufferedSource bufferedSink = Okio.buffer(Okio.source(bos));
+        ByteString v = null;
+        try {
+//            bufferedSink.writeInt(byteString.size());
+            bufferedSink.read(byteString);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+           v =  bufferedSink.readByteString();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }return v;
+    }
+
 }
