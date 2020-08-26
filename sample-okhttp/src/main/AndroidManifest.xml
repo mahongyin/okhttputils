@@ -58,7 +58,8 @@
         <service
             android:name="com.mhy.websoket.WebSocketClientService"
             android:enabled="true"
-            android:exported="true" />
+            android:exported="true"
+            />
         <service
             android:name="com.mhy.websoket.WebSocketClientService$GrayInnerService"
             android:enabled="true"
