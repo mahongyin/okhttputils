@@ -222,20 +222,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.toggleSoftInput(0, InputMethodManager.HIDE_NOT_ALWAYS);
     }
-//    @Override
-//    protected void onDestroy() {
-//        super.onDestroy();
-//        if (null!=client){
-//            jWebSClientService.closeConnect();
-//            client=null;
-//        }
-//        unregisterReceiver(chatMessageReceiver);
-//          if (serviceConnection!=null){
-//                    unbindService(serviceConnection);
-//                    serviceConnection=null;
-//                }
-//        stopService(new Intent(mContext, WebSocketClientService.class));
-//    }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        unregisterReceiver(chatMessageReceiver);
+
+        stopService(new Intent(mContext, WebSocketClientService.class));
+        if (serviceConnection!=null){
+            unbindService(serviceConnection);
+            serviceConnection=null;
+        }
+          if (null!=jWebSClientService){
+            jWebSClientService.closeConnect();
+            jWebSClientService=null;
+        }
+    }
 
     /**
      * 检测是否开启通知
