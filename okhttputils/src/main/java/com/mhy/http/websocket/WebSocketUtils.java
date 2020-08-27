@@ -67,7 +67,7 @@ public class WebSocketUtils implements IWebSocket {
         }
 
         /**
-         * 图片文件
+         * 二进制文件
          * @param webSocket
          * @param bytes
          */
@@ -87,6 +87,11 @@ public class WebSocketUtils implements IWebSocket {
             }
         }
 
+        /**
+         * 字符串
+         * @param webSocket
+         * @param text
+         */
         @Override
         public void onMessage(WebSocket webSocket, final String text) {
             if (webSoketListener != null) {

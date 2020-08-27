@@ -1,5 +1,7 @@
 package com.mhy.http.websocket.listener;
 
+import java.io.File;
+
 import okhttp3.Response;
 import okio.ByteString;
 
@@ -16,7 +18,7 @@ public abstract class WebSoketListener {
 
   /**
    * 图片 文件
-   * @param bytes 包装
+   * @param bytes 二进制包装
    */
   public void onMessage(ByteString bytes) {
   }

@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.text.TextUtils;
 import android.util.Base64;
+import android.util.Log;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
@@ -67,18 +68,55 @@ public class ByteStringUtils {
         }
         return null;
     }
+   static class  MyThread extends Thread{
+       ByteString bytes;  File file;
+        MyThread(ByteString bytes, File file){
+            this.bytes=bytes;
+            this.file=file;
+        }
+       @Override
+       public void run() {
+           super.run();
+           FileOutputStream outputStream = null;
+           BufferedOutputStream bos = null;
+           try {
+               outputStream = new FileOutputStream(file);
+               bos = new BufferedOutputStream(outputStream);
+               bytes.write(bos);
+               bos.flush();
+           } catch (Exception e) {
+               e.printStackTrace();
+           } finally {
+               try {
+                   if (null != bos) {
+                       bos.close();
+                   }
+                   if (null != outputStream) {
+                       outputStream.close();
+                   }
+               } catch (IOException e) {
+                   e.printStackTrace();
+               }
+           }
+       }
+   }
+     public static void outToFile(ByteString bytes, String outDirPath, String fileName) {
+        File file = new File(outDirPath, fileName);
+        new MyThread(bytes,file).start();
+    }
 
     //将Byte数组转换成文件
-    public static File bytes2File(byte[] bytes, String outDirPath, String fileName) {
+    public static File bytesToFile(byte[] bytes, String outDirPath, String fileName) {
         BufferedOutputStream bos = null;
         FileOutputStream fos = null;
         File file = null;
+
         try {
             File dir = new File(outDirPath);
             if (!dir.exists() && dir.isDirectory()) {// 判断文件目录是否存在
                 dir.mkdirs();
             }
-            file = new File(outDirPath + "/" + fileName);
+            file = new File(outDirPath , fileName);
             fos = new FileOutputStream(file);
             bos = new BufferedOutputStream(fos);
             bos.write(bytes);
@@ -198,10 +236,18 @@ public class ByteStringUtils {
         return null;
     }
 
-    public static Bitmap bytes2Bitmap(byte[] bytes) {
+    public static Bitmap bytesToBitmap(byte[] bytes) {
         return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
     }
-
+    /**
+     * base64转为bitmap
+     * @param base64Data
+     * @return
+     */
+    public static Bitmap base64ToBitmap(String base64Data) {
+        byte[] bytes = Base64.decode(base64Data, Base64.DEFAULT);
+        return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+    }
     //获取请求数据包byte[]
     public static byte[] toBytes(ByteString byteString) {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -215,6 +261,7 @@ public class ByteStringUtils {
         }
         return bos.toByteArray();
     }
+
     public static ByteString toByteString(byte[] byteString) {
         ByteArrayInputStream bos = new ByteArrayInputStream(byteString);
         BufferedSource bufferedSink = Okio.buffer(Okio.source(bos));
@@ -226,10 +273,11 @@ public class ByteStringUtils {
             e.printStackTrace();
         }
         try {
-           v =  bufferedSink.readByteString();
+            v = bufferedSink.readByteString();
         } catch (IOException e) {
             e.printStackTrace();
-        }return v;
+        }
+        return v;
     }
 
 }

@@ -2,10 +2,15 @@ package com.mhy.websoket;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
@@ -25,16 +30,15 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.mhy.http.websocket.ByteFileType;
 import com.mhy.http.websocket.ByteStringUtils;
 import com.mhy.http.websocket.WebSocketUtils;
 import com.mhy.http.websocket.listener.WebSoketListener;
 import com.mhy.sample_okhttp.R;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
@@ -71,42 +75,56 @@ public class SocketActivity extends AppCompatActivity {
         @Override
         public void onMessage(final ByteString bytes) {
             // 开始时间
-            final long begin = System.currentTimeMillis();
-//            String path = getExternalCacheDir().getAbsolutePath()+"/" +begin+ ".png";
-            final String path = getExternalCacheDir().getAbsolutePath();
-            //Log.i("mhyLog收",bytes.base64());
-            byte[] bytes1 = bytes.toByteArray();
-//            byte[] bytes1 = ByteStringUtils.toBytes(bytes);
-            imv.setImageBitmap(ByteStringUtils.bytes2Bitmap(bytes1));
-            File ofile = ByteStringUtils.bytes2File(bytes1, path, begin + ".png");
-            if (null != ofile) {
-                Log.i("mhyLog", ofile.getAbsolutePath());
-            }
-            final ByteString bytes2 = bytes;
-            new Thread(new Runnable() {
+//            long begin = System.currentTimeMillis();
+//            String path = getExternalFilesDir("").getAbsolutePath();
+//            String end = ByteFileType.getFileTypeByStream(bytes.substring(0, 10).toByteArray());
+//
+//            byte[] bytes1 = bytes.toByteArray();
 
-                @Override
-                public void run() {
-                    try {
-                        File file = new File(path, begin + "t.png");
-                        Log.i("mhyLog", file.getAbsolutePath());
-                        FileOutputStream outputStream = new FileOutputStream(file);
-                        BufferedOutputStream bos = new BufferedOutputStream(outputStream);
-                        bytes2.write(bos);
-                        bos.flush();
-                        // 用时毫秒
-//                System.out.println(System.currentTimeMillis() - begin);// 78
-                        Log.i("mhyLog", "时间" + (System.currentTimeMillis() - begin));
-                        bos.close();
-                        outputStream.close();
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }).start();
-
+            Bitmap bitmap64 = ByteStringUtils.base64ToBitmap(bytes.base64());
+//            Bitmap bitmap= ByteStringUtils.bytesToBitmap(bytes1);
+            imv.setImageBitmap(bitmap64);
+//            ByteStringUtils.bytesToFile(bytes1, path, begin+"."+end);
+//            ByteStringUtils.outToFile(bytes,path,begin+"."+end);
+//            new DownloadTask(bytes1,path,begin+"."+end).execute();
             //接收到 文件
+        }
+
+        class DownloadTask extends AsyncTask<Void, Integer, File> {
+            byte[] bytes;
+            String dirPath;
+            String name;
+
+            DownloadTask(byte[] bytes, String dirPath, String name) {
+                this.bytes = bytes;
+                this.dirPath = dirPath;
+                this.name = name;
+            }
+
+            @Override
+            protected void onPreExecute() {
+                Log.i("mhyLog", "开始");
+            }
+
+            @Override
+            protected File doInBackground(Void... voids) {
+                Log.i("mhyLog", "child开始下载");
+                return ByteStringUtils.bytesToFile(bytes, dirPath, name);
+            }
+
+            @Override
+            protected void onProgressUpdate(Integer... values) {
+                Log.i("mhyLog", "进度" + values[0]);
+            }
+
+            @Override
+            protected void onPostExecute(File file) {
+                if (null != file && file.exists()) {
+                    Log.i("mhyLog", "下载成功");
+                } else {
+                    Log.i("mhyLog", "下载失败");
+                }
+            }
         }
 
         @Override
