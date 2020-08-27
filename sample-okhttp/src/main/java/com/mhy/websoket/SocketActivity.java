@@ -8,9 +8,6 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
@@ -30,7 +27,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.mhy.http.websocket.ByteFileType;
 import com.mhy.http.websocket.ByteStringUtils;
 import com.mhy.http.websocket.WebSocketUtils;
 import com.mhy.http.websocket.listener.WebSoketListener;
@@ -57,8 +53,7 @@ public class SocketActivity extends AppCompatActivity {
         @Override
         public void onOpen(Response response) {
             //连接成功 通知
-            tv_content.append(Spanny.spanText("服务器连接成功\n\n", new ForegroundColorSpan(
-                    ContextCompat.getColor(getBaseContext(), R.color.colorPrimary))));
+            tv_content.append(Spanny.spanText("服务器连接成功\n\n", new ForegroundColorSpan(ContextCompat.getColor(getBaseContext(), R.color.colorPrimary))));
         }
 
         @Override
@@ -172,7 +167,7 @@ public class SocketActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 String url = edit_url.getText().toString();
-                if (!TextUtils.isEmpty(url) && url.contains("ws")) {
+                if (!TextUtils.isEmpty(url) && url.startsWith("ws")) {
                     if (webSocketUtils != null) {
                         webSocketUtils.stopConnect();
                         webSocketUtils = null;

@@ -101,7 +101,7 @@ public class ByteStringUtils {
        }
    }
      public static void outToFile(ByteString bytes, String outDirPath, String fileName) {
-        File file = new File(outDirPath, fileName);
+        File file = new File(outDirPath+"/"+fileName);
         new MyThread(bytes,file).start();
     }
 
@@ -116,7 +116,7 @@ public class ByteStringUtils {
             if (!dir.exists() && dir.isDirectory()) {// 判断文件目录是否存在
                 dir.mkdirs();
             }
-            file = new File(outDirPath , fileName);
+            file = new File(outDirPath + "/" + fileName);
             fos = new FileOutputStream(file);
             bos = new BufferedOutputStream(fos);
             bos.write(bytes);
