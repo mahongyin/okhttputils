@@ -27,7 +27,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.mhy.http.websocket.ByteStringUtils;
+import com.mhy.http.websocket.utils.ByteStringUtils;
 import com.mhy.http.websocket.WebSocketUtils;
 import com.mhy.http.websocket.listener.WebSoketListener;
 import com.mhy.sample_okhttp.R;

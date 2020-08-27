@@ -1,4 +1,4 @@
-package com.mhy.http.websocket;
+package com.mhy.http.websocket.utils;
 
 import android.util.Log;
 
@@ -106,7 +106,7 @@ public class FileTypeUtil {
             //获取文件头的前六位
             byte[] b = new byte[3];
             fis.read(b, 0, b.length);
-            String fileCode = ByteFileType.getFileHexString(b);
+            String fileCode = FileType.getFileHexString(b);
             if (fileCode==null){
                 return null;
             }

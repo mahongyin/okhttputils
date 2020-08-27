@@ -11,7 +11,7 @@
 * Android Studio
 	
 	```
-	compile 'com.mhy:okhttputils:3.12.0'
+	compile 'com.mhy:okhttp:3.12.0'
 	```
 	
 * Eclipse
@@ -393,6 +393,29 @@ protected void onDestroy()
 ```
 比如，当前Activity页面所有的请求以Activity对象作为tag，可以在onDestory里面统一取消。
 
+  //创建 websocket client
+  ```
+                    webSocketUtils = new WebSocketUtils.Builder(getBaseContext())
+                            .client(new OkHttpClient().newBuilder()
+                                    .pingInterval(15, TimeUnit.SECONDS)
+                                    .retryOnConnectionFailure(true)
+                                    .build())
+                            .needReconnect(true)
+                            .wsUrl(url)
+                            .build();
+                    webSocketUtils.setWebSoketListener(webSoketListener);
+                    webSocketUtils.startConnect();
+
+//发送消息
+ if (webSocketUtils != null && webSocketUtils.isWsConnected()) {
+                        boolean isSend = webSocketUtils.sendMessage(content);
+                        if (isSend) {}}
+
+//接收消息  实现接口
+ private WebSoketListener webSoketListener = new WebSoketListener() {
+.......
+}
+ ```                   
 ## 混淆
 
 ```

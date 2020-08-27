@@ -6,8 +6,8 @@ buildscript {
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.0.1'
-
+        classpath 'com.android.tools.build:gradle:3.4.2'
+        classpath 'com.novoda:bintray-release:0.9.1'
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
@@ -20,4 +20,18 @@ allprojects {
         google()
         maven { url "https://www.jitpack.io" }
     }
+    tasks.withType(Javadoc) {
+        options {
+            encoding "UTF-8"
+            charSet 'UTF-8'
+            links "http://docs.oracle.com/javase/7/docs/api"
+            failOnError false
+        }
+    }
+    //避免javadoc的检查，防止上传时报错
+    //   tasks.withType(Javadoc) {
+    //      options.addStringOption('Xdoclint:none', '-quiet')
+    //      options.addStringOption('encoding', 'UTF-8')
+    //  }
 }
+

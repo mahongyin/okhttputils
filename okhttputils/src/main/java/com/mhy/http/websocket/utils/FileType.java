@@ -1,4 +1,4 @@
-package com.mhy.http.websocket;
+package com.mhy.http.websocket.utils;
 
 /**
  * Created By Mahongyin
@@ -17,10 +17,10 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
-public class ByteFileType {
+public class FileType {
 
     public final static Map<String, String> FILE_TYPE_MAP = new HashMap<String, String>();
-    private ByteFileType() {
+    private FileType() {
     }
 
     static {
