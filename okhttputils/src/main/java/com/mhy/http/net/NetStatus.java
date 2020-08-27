@@ -76,7 +76,7 @@ private ConnectivityManager connectivityManager;
                     public void onLost(Network network) {
                         super.onLost(network);
                         Log.e("net", "onLost ==>网络已断开" + network.toString());
-                        networkEvent.onStatus(ConnectivityStatus.OFFLINE);
+//                        networkEvent.onStatus(ConnectivityStatus.OFFLINE);
                     }
 
                     @Override
