@@ -43,7 +43,7 @@ public class PostFormRequest extends OkHttpRequest
         } else
         {
             MultipartBody.Builder builder = new MultipartBody.Builder()
-                    .setType(MultipartBody.FORM);
+                    .setType(MultipartBody.FORM);//"multipart/form-data"
             addParams(builder);
 
             for (int i = 0; i < files.size(); i++)

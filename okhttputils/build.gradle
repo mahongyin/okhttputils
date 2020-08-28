@@ -42,7 +42,7 @@ publish {
     userOrg = 'mhylib'// 用户所在组织,好像是用户名
     groupId = 'com.mhy'// 包名
     artifactId = 'okhttp'// library项目的名字
-    publishVersion = '1.0.0'// 版本
+    publishVersion = '3.12.0'// 版本
     desc = 'build okhttp SDK'//不中文
     website = "https://github.com/mahongyin/okhttputils"//你的开源地址，注意，一定要用GitHub地址
 }

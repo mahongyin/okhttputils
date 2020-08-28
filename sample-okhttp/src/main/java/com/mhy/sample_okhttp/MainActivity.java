@@ -106,8 +106,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void getHtml(View view) {
-        String url = "http://www.zhiyun-tech.com/App/Rider-M/changelog-zh.txt";
-        url = "http://www.391k.com/api/xapi.ashx/info.json?key=bd_hyrzjjfb4modhj&size=10&page=1";
+        String url = "http://www.wanandroid.com/blog/show/2";
         OkHttpUtils
                 .get()
                 .url(url)
@@ -115,7 +114,17 @@ public class MainActivity extends AppCompatActivity {
                 .build()
                 .execute(new MyStringCallback());
     }
+    public void getHttpsHtml(View view) {
+        String url = "https://www.wanandroid.com/blog/show/2";
 
+        OkHttpUtils
+                .get()//
+                .url(url)//
+                .id(101)
+                .build()//
+                .execute(new MyStringCallback());
+
+    }
 
     public void postString(View view) {
         String url = mBaseUrl + "user!postString";
@@ -123,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
                 .postString()
                 .url(url)
                 .mediaType(MediaType.parse("application/json; charset=utf-8"))
-                .content(new Gson().toJson(new User("zhy", "123")))
+                .content(new Gson().toJson(new User("mhy", "123456")))
                 .build()
                 .execute(new MyStringCallback());
 
@@ -143,16 +152,15 @@ public class MainActivity extends AppCompatActivity {
                 .build()
                 .execute(new MyStringCallback());
 
-
     }
 
     public void getUser(View view) {
-        String url = "https://www.wanandroid.com/banner/json";
+        String url = "https://www.wanandroid.com/user/login";
         OkHttpUtils
                 .post()//
                 .url(url)//
-                .addParams("page", "2")//
-                .addParams("num", "23")//
+                .addParams("username", "mhy")//
+                .addParams("password", "123")//
                 .build()//
                 .execute(new GenericsCallback<User>(new GsonGenericsSerializator()) {
                     @Override
@@ -162,7 +170,27 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onResponse(User response, int id) {
-                        mTv.setText("onResponse:" + response.username);
+                        mTv.setText("onResponse:" + response.getErrorCode());
+                    }
+                });
+    }
+    public void getDemo(View view) {
+        String url =  "https://www.wanandroid.com//hotkey/json";
+        String url1 = "https://www.wanandroid.com/friend/json";
+        String url2 =  "https://www.wanandroid.com/banner/json";
+        OkHttpUtils
+                .get()//
+                .url(url)//
+                .build()//
+                .execute(new StringCallback() {
+                    @Override
+                    public void onError(Call call, Exception e, int id) {
+                        mTv.setText("onError:" + e.getMessage());
+                    }
+
+                    @Override
+                    public void onResponse(String response, int id) {
+                        mTv.setText("onResponse:" + response);
                     }
                 });
     }
@@ -170,15 +198,15 @@ public class MainActivity extends AppCompatActivity {
 
     public void getUsers(View view) {
         Map<String, String> params = new HashMap<String, String>();
-        params.put("page", "2");
-        params.put("num", "22");
-        String url = "https://www.wanandroid.com/banner/json";
+        params.put("username", "mhy");
+        params.put("password", "123");
+        String url = "https://www.wanandroid.com/user/login";
         OkHttpUtils//
                 .post()//
                 .url(url)//
-//                .params(params)//
+                .params(params)//
                 .build()//
-                .execute(new ListUserCallback()//
+                .execute(new StringCallback()//
                 {
                     @Override
                     public void onError(Call call, Exception e, int id) {
@@ -186,30 +214,16 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onResponse(List<User> response, int id) {
+                    public void onResponse(String response, int id) {
                         mTv.setText("onResponse:" + response);
                     }
                 });
     }
 
 
-    public void getHttpsHtml(View view) {
-        String url = "https://kyfw.12306.cn/otn/";
-
-//                "https://12
-//        url =3.125.219.144:8443/mobileConnect/MobileConnect/authLogin.action?systemid=100009&mobile=13260284063&pipe=2&reqtime=1422986580048&ispin=2";
-        OkHttpUtils
-                .get()//
-                .url(url)//
-                .id(101)
-                .build()//
-                .execute(new MyStringCallback());
-
-    }
-
     public void getImage(View view) {
         mTv.setText("");
-        String url = "http://images.csdn.net/20150817/1.jpg";
+        String url = "https://images.csdn.net/20150817/1.jpg";
         OkHttpUtils
                 .get()//
                 .url(url)//
