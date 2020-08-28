@@ -144,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(MainActivity.this, "文件不存在，请修改文件路径", Toast.LENGTH_SHORT).show();
             return;
         }
-        String url = mBaseUrl + "person/fileUpload";
+        String url = "https://a1000.top/up";
         OkHttpUtils
                 .postFile()
                 .url(url)
@@ -255,17 +255,17 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         Map<String, String> params = new HashMap<>();
-        params.put("username", "张鸿洋");
-        params.put("password", "123");
+        params.put("user", "123456");
+        params.put("token", "123456abc");
 
         Map<String, String> headers = new HashMap<>();
         headers.put("APP-Key", "APP-Secret222");
         headers.put("APP-Secret", "APP-Secret111");
 
-        String url = mBaseUrl + "person/fileUpload";
+        String url = "https://a1000.top/up/index.php";
 
         OkHttpUtils.post()//
-                .addFile("mFile", "parser0.jpg", file)//
+                .addFile("file", "parser0.jpg", file)//
                 .url(url)//
                 .params(params)//
                 .headers(headers)//
@@ -282,12 +282,12 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         Map<String, String> params = new HashMap<>();
-        params.put("username", "张鸿洋");
-        params.put("password", "123");
+        params.put("user", "123");
+        params.put("token", "123abc");
 
-        String url = mBaseUrl + "person/fileUpload";
+        String url = "https://a1000.top/up/index.php";
         OkHttpUtils.post()//
-                .addFile("mFile", "parser0.jpg", file)//
+                .addFile("file", "parser0.jpg", file)//
                 .addFile("mFile", "test1.txt", file2)//
                 .url(url)
                 .params(params)//
