@@ -67,7 +67,7 @@ public class WebSocketUtils implements IWebSocket {
         }
 
         /**
-         * 二进制文件
+         * 二进制文件  OPCODE_TEXT=2
          * @param webSocket
          * @param bytes
          */
@@ -88,7 +88,7 @@ public class WebSocketUtils implements IWebSocket {
         }
 
         /**
-         * 字符串
+         * 字符串   OPCODE_TEXT=1
          * @param webSocket
          * @param text
          */

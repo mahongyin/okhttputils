@@ -19,6 +19,7 @@ allprojects {
         jcenter()
         google()
         maven { url "https://www.jitpack.io" }
+        maven { url "https://dl.bintray.com/mhylib/maven" }
     }
     tasks.withType(Javadoc) {
         options {
@@ -28,7 +29,10 @@ allprojects {
             failOnError false
         }
     }
-    //避免javadoc的检查，防止上传时报错
+//    tasks.withType(Javadoc).all {
+//        enabled = false
+//    }
+        //避免javadoc的检查，防止上传时报错
     //   tasks.withType(Javadoc) {
     //      options.addStringOption('Xdoclint:none', '-quiet')
     //      options.addStringOption('encoding', 'UTF-8')

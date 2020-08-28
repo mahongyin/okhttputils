@@ -33,7 +33,7 @@ import okhttp3.Request;
 
 public class MainActivity extends AppCompatActivity {
 
-    private String mBaseUrl = "http://a1000.top:8080/Test/";
+    private String mBaseUrl = "https://wanandroid.com/";
 
     private static final String TAG = "MainActivity";
 
@@ -147,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void getUser(View view) {
-        String url = "http://a1000.top/kaiche/gettest.php";
+        String url = "https://www.wanandroid.com/banner/json";
         OkHttpUtils
                 .post()//
                 .url(url)//
@@ -172,7 +172,7 @@ public class MainActivity extends AppCompatActivity {
         Map<String, String> params = new HashMap<String, String>();
         params.put("page", "2");
         params.put("num", "22");
-        String url = "http://a1000.top/kaiche/gettest.php";
+        String url = "https://www.wanandroid.com/banner/json";
         OkHttpUtils//
                 .post()//
                 .url(url)//

@@ -15,7 +15,11 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.Reader;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 
 import okio.BufferedSink;
 import okio.BufferedSource;
@@ -104,7 +108,79 @@ public class ByteStringUtils {
         File file = new File(outDirPath+"/"+fileName);
         new MyThread(bytes,file).start();
     }
+    public byte[] toBytes(String text) {
+        if (text != null) {
+            return text.getBytes();
+        }
+        return null;
+    }
+    public byte[] toBytes(ByteString bytes) {
 
+        if (bytes != null) {
+            return bytes.toByteArray();
+        }
+        return null;
+    }
+    //获取请求数据包byte[]
+    public static byte[] okioToBytes(ByteString byteString) {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        BufferedSink bufferedSink = Okio.buffer(Okio.sink(bos));
+        try {
+//            bufferedSink.writeInt(byteString.size());
+            bufferedSink.write(byteString);
+            bufferedSink.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return bos.toByteArray();
+    }
+
+    public static ByteString toByteString(byte[] byteString) {
+        ByteArrayInputStream bos = new ByteArrayInputStream(byteString);
+        BufferedSource bufferedSink = Okio.buffer(Okio.source(bos));
+        ByteString byteStr = null;
+        try {
+            bufferedSink.read(byteString);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            byteStr = bufferedSink.readByteString();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return byteStr;
+    }
+
+
+    public String toString(ByteString bytes) {
+            return bytes.utf8();
+    }
+
+    public ByteString toByteString(String text) {
+            return ByteString.encodeUtf8(text);
+    }
+
+    public Reader toCharStream(String text) {
+            return new InputStreamReader(new ByteArrayInputStream(text.getBytes()));
+    }
+
+    public Reader toCharStream(ByteString bytes) {
+        if (bytes != null) {
+            final ByteBuffer buffer = bytes.asByteBuffer();
+            InputStream inputStream=new InputStream() {
+                @Override
+                public int read() throws IOException {
+                    if (buffer.hasRemaining()) {
+                        return buffer.get();
+                    }
+                    return -1;
+                }
+            };
+            return new InputStreamReader(inputStream);
+        }
+        return null;
+    }
     //将Byte数组转换成文件
     public static File bytesToFile(byte[] bytes, String outDirPath, String fileName) {
         BufferedOutputStream bos = null;
@@ -247,37 +323,6 @@ public class ByteStringUtils {
     public static Bitmap base64ToBitmap(String base64Data) {
         byte[] bytes = Base64.decode(base64Data, Base64.DEFAULT);
         return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-    }
-    //获取请求数据包byte[]
-    public static byte[] toBytes(ByteString byteString) {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        BufferedSink bufferedSink = Okio.buffer(Okio.sink(bos));
-        try {
-//            bufferedSink.writeInt(byteString.size());
-            bufferedSink.write(byteString);
-            bufferedSink.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return bos.toByteArray();
-    }
-
-    public static ByteString toByteString(byte[] byteString) {
-        ByteArrayInputStream bos = new ByteArrayInputStream(byteString);
-        BufferedSource bufferedSink = Okio.buffer(Okio.source(bos));
-        ByteString v = null;
-        try {
-//            bufferedSink.writeInt(byteString.size());
-            bufferedSink.read(byteString);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
-            v = bufferedSink.readByteString();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return v;
     }
 
 }
