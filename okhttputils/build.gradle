@@ -1,5 +1,5 @@
 apply plugin: 'com.android.library'
-apply plugin: 'com.novoda.bintray-release'//jcent
+//apply plugin: 'com.novoda.bintray-release'//jcent
 android {
     compileSdkVersion 28
 
@@ -37,15 +37,15 @@ task makeJar(type: Copy) {
 makeJar.dependsOn(clearJar, build)
 
 //jcent
-publish {
-    repoName = 'maven'//maven仓库名
-    userOrg = 'mhylib'// 用户所在组织,好像是用户名
-    groupId = 'com.mhy'// 包名
-    artifactId = 'okhttp'// library项目的名字
-    publishVersion = '3.12.0'// 版本
-    desc = 'build okhttp SDK'//不中文
-    website = "https://github.com/mahongyin/okhttputils"//你的开源地址，注意，一定要用GitHub地址
-}
+//publish {
+//    repoName = 'maven'//maven仓库名
+//    userOrg = 'mhylib'// 用户所在组织,好像是用户名
+//    groupId = 'com.mhy'// 包名
+//    artifactId = 'okhttp'// library项目的名字
+//    publishVersion = '3.12.0'// 版本
+//    desc = 'build okhttp SDK'//不中文
+//    website = "https://github.com/mahongyin/okhttputils"//你的开源地址，注意，一定要用GitHub地址
+//}
 //Terminal:gradlew clean build bintrayUpload -PbintrayUser=这里填你的JCenter账号 -PbintrayKey=这里填你的APIKey -PdryRun=false
 
 

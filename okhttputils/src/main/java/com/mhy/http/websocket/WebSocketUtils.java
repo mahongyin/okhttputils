@@ -36,6 +36,9 @@ public class WebSocketUtils implements IWebSocket {
     private Lock mLock;
     private Handler wsMainHandler = new Handler(Looper.getMainLooper());
     private int reconnectCount = 0;   //重连次数
+    /**
+     * 重连 任务
+     */
     private Runnable reconnectRunnable = new Runnable() {
         @Override
         public void run() {

@@ -172,7 +172,7 @@ OkHttpUtils
     .addParams("password", "123")
     .build()
     .execute(callback);
-
+GsonGenericsSerializator
 ```
 
 ### Post JSON

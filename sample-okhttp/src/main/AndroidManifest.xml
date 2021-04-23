@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.mhy.sample_okhttp" >
+    package="com.mhy.sample_okhttp">
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
@@ -22,15 +22,16 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <!--android 9.0之后使用前台服务，需要添加权限-->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-<!--    android:networkSecurityConfig="@xml/network_security_config"-->
+    <!--    android:networkSecurityConfig="@xml/network_security_config"-->
     <application
         android:name="com.mhy.sample_okhttp.MyApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-
-        android:theme="@style/AppTheme" >
-        <activity android:name="com.mhy.websoket.SocketActivity"
+        android:theme="@style/AppTheme"
+        android:usesCleartextTraffic="true">
+        <activity
+            android:name="com.mhy.websoket.SocketActivity"
             android:label="WebSocket"
             android:windowSoftInputMode="stateHidden">
             <intent-filter>
@@ -39,7 +40,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.mhy.websoket.MainActivity"
+        <activity
+            android:name="com.mhy.websoket.MainActivity"
             android:label="MainSocket"
             android:windowSoftInputMode="stateHidden">
             <intent-filter>
@@ -58,8 +60,7 @@
         <service
             android:name="com.mhy.websoket.WebSocketClientService"
             android:enabled="true"
-            android:exported="true"
-            />
+            android:exported="true" />
         <service
             android:name="com.mhy.websoket.WebSocketClientService$GrayInnerService"
             android:enabled="true"
