@@ -43,7 +43,7 @@ public class WebSocketClientService extends Service {
     private final static int GRAY_SERVICE_ID = 1001;
     private final static int SERVICE_ID = 1000;
 
-    //灰色保活
+    //灰色保活 26以下
     public static class GrayInnerService extends Service {
         @Override
         public int onStartCommand(Intent intent, int flags, int startId) {
@@ -115,6 +115,23 @@ public class WebSocketClientService extends Service {
             Log.e(TAG, "websocket连接成功");
         }
 
+       final String message = "{\"cmd\":\"msg.ping\"}";
+        Timer mTimer ;
+        TimerTask timerTask ;
+
+        //每10秒发送一次心跳
+        private void startTask() {
+			  mTimer = new Timer();
+         timerTask = new TimerTask() {
+            public void run() {
+                if (client != null) {
+                    client.sendMessage(message);
+                }
+            }
+        };
+            mTimer.schedule(timerTask, 0, 10000);
+
+        }
         @Override
         public void onMessage(String message) {
             //接受到 文本消息
@@ -142,7 +159,8 @@ public class WebSocketClientService extends Service {
         @Override
         public void onClosing(int code, String reason) {
             Log.d(TAG, "Websocket-----onClosing");
-
+timerTask.cancel()；
+            mTimer.cancel()；
         }
 
         @Override
@@ -154,7 +172,9 @@ public class WebSocketClientService extends Service {
         @Override
         public void onFailure(Throwable t, Response response) {
             Log.d(TAG, "Websocket-----onFailure");
-
+  //stopSelf();//自行结束服务
+  timerTask.cancel()；
+            mTimer.cancel()；
         }
     };
 
@@ -202,7 +222,7 @@ public class WebSocketClientService extends Service {
         //创建 websocket client
         client = new WebSocketUtils.Builder(getBaseContext())
                 .client(new OkHttpClient().newBuilder()
-                        .pingInterval(15, TimeUnit.SECONDS)
+                        .pingInterval(15, TimeUnit.SECONDS)//设置WebSocket连接的保活
                         .retryOnConnectionFailure(true)
                         .build())
                 .needReconnect(true)
@@ -342,6 +362,16 @@ public class WebSocketClientService extends Service {
     private Notification getChannelNotification(String title, String content, String channelId) {
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, channelId);
+		       if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            //修改安卓8.1以上系统报错
+            NotificationChannel notificationChannel = new NotificationChannel(channelId, "通知", NotificationManager.IMPORTANCE_MIN);
+            notificationChannel.enableLights(false);//如果使用中的设备支持通知灯，则说明此通知通道是否应显示灯
+            notificationChannel.setShowBadge(false);//是否显示角标
+            notificationChannel.setLockscreenVisibility(Notification.VISIBILITY_SECRET);
+            NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            manager.createNotificationChannel(notificationChannel);
+            builder.setChannelId(channelId);
+        }
         return builder
 //设置优先级
                 .setPriority(NotificationCompat.PRIORITY_MAX)
@@ -371,9 +401,8 @@ public class WebSocketClientService extends Service {
                 .build();
 
     }
-
+/**不需要渠道*/
     private Notification getNotification_25(String title, String content) {
-
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
         return builder.setContentTitle(title)
                 .setContentText(content)

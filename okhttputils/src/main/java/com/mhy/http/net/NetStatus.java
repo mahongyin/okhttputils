@@ -115,9 +115,11 @@ private ConnectivityManager connectivityManager;
 //                        Log.e("net", "onLinkPropertiesChanged ==>" + linkProperties.toString());
 //                    }
                 });
+                return;
             }
-        } else {
-
+            return;
+        }
+//不适配上面 就用旧的广播方式
             ReactiveNetwork reactiveNetwork = new ReactiveNetwork();
             reactiveNetwork.setNetworkEvent(new ReactiveNetwork.NetworkEvent() {
                 @Override
@@ -127,7 +129,7 @@ private ConnectivityManager connectivityManager;
                 }
             });
             reactiveNetwork.observeNetworkConnectivity(context);
-        }
+
 
     }
 }
