@@ -35,8 +35,7 @@ public class GetBuilder extends OkHttpRequestBuilder<GetBuilder> implements HasP
         Uri.Builder builder = Uri.parse(url).buildUpon();
         Set<String> keys = params.keySet();
         Iterator<String> iterator = keys.iterator();
-        while (iterator.hasNext())
-        {
+        while (iterator.hasNext()) {
             String key = iterator.next();
             builder.appendQueryParameter(key, params.get(key));
         }

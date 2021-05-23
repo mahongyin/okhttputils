@@ -31,6 +31,9 @@ import android.widget.Toast;
 import com.mhy.http.websocket.WebSocketUtils;
 import com.mhy.http.websocket.listener.WebSoketListener;
 import com.mhy.sample_okhttp.R;
+
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 import okhttp3.OkHttpClient;
 import okhttp3.Response;
@@ -123,6 +126,7 @@ public class WebSocketClientService extends Service {
         private void startTask() {
 			  mTimer = new Timer();
          timerTask = new TimerTask() {
+            @Override
             public void run() {
                 if (client != null) {
                     client.sendMessage(message);
@@ -159,8 +163,8 @@ public class WebSocketClientService extends Service {
         @Override
         public void onClosing(int code, String reason) {
             Log.d(TAG, "Websocket-----onClosing");
-timerTask.cancel()；
-            mTimer.cancel()；
+            timerTask.cancel();
+            mTimer.cancel();
         }
 
         @Override
@@ -173,8 +177,8 @@ timerTask.cancel()；
         public void onFailure(Throwable t, Response response) {
             Log.d(TAG, "Websocket-----onFailure");
   //stopSelf();//自行结束服务
-  timerTask.cancel()；
-            mTimer.cancel()；
+        timerTask.cancel();
+            mTimer.cancel();
         }
     };
 
