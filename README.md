@@ -420,8 +420,8 @@ protected void onDestroy()
 
 ```
 #okhttputils
--dontwarn com.zhy.http.**
--keep class com.zhy.http.**{*;}
+-dontwarn com.mhy.http.**
+-keep class com.mhy.http.**{*;}
 
 
 #okhttp
