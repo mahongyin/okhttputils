@@ -34,6 +34,8 @@ import com.mhy.sample_okhttp.R;
 
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import okhttp3.OkHttpClient;
 import okhttp3.Response;
@@ -119,23 +121,7 @@ public class WebSocketClientService extends Service {
         }
 
        final String message = "{\"cmd\":\"msg.ping\"}";
-        Timer mTimer ;
-        TimerTask timerTask ;
 
-        //每10秒发送一次心跳
-        private void startTask() {
-			  mTimer = new Timer();
-         timerTask = new TimerTask() {
-            @Override
-            public void run() {
-                if (client != null) {
-                    client.sendMessage(message);
-                }
-            }
-        };
-            mTimer.schedule(timerTask, 0, 10000);
-
-        }
         @Override
         public void onMessage(String message) {
             //接受到 文本消息
@@ -163,8 +149,6 @@ public class WebSocketClientService extends Service {
         @Override
         public void onClosing(int code, String reason) {
             Log.d(TAG, "Websocket-----onClosing");
-            timerTask.cancel();
-            mTimer.cancel();
         }
 
         @Override
@@ -176,9 +160,6 @@ public class WebSocketClientService extends Service {
         @Override
         public void onFailure(Throwable t, Response response) {
             Log.d(TAG, "Websocket-----onFailure");
-  //stopSelf();//自行结束服务
-        timerTask.cancel();
-            mTimer.cancel();
         }
     };
 

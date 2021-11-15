@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.Log;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.KeyManagementException;
@@ -37,40 +38,59 @@ import okhttp3.TlsVersion;
  * at 14:40
  */
 public class HttpsUtils {
-    /**
-     * 支持okhttp明文通信
-     *
-     * @return
-     */
-    public static ArrayList<ConnectionSpec> getUnSafeConnectionSpecs() {
-        ArrayList<ConnectionSpec> connectionSpecs = new ArrayList<>();
-        ConnectionSpec unSafeConnectionSpec = new ConnectionSpec.Builder(ConnectionSpec.CLEARTEXT).build();
-        connectionSpecs.add(unSafeConnectionSpec);
-        ConnectionSpec safeConnectionSpec = new ConnectionSpec.Builder(ConnectionSpec.MODERN_TLS)
-                .tlsVersions(TlsVersion.TLS_1_2, TlsVersion.TLS_1_1, TlsVersion.TLS_1_0)
-                .build();
-        connectionSpecs.add(safeConnectionSpec);
-        return connectionSpecs;
-    }
 
     public static class SSLParams {
         public SSLSocketFactory sSLSocketFactory;
         public X509TrustManager trustManager;
     }
+    /**
+     * 读取证书文件 Assets/cert.pem
+     */
+    public static InputStream getAssetsCer(Context context, String certName) {
+        InputStream inputStream = null;
+        try {
+            inputStream = context.getAssets().open(certName);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return inputStream;
+    }
+    public static InputStream getRawCer(Context context, int cerResID) {
+        InputStream inputStream = null;
+        inputStream = context.getResources().openRawResource(cerResID);
+        return inputStream;
+    }
 
-    public static SSLParams getSslSocketFactory(InputStream[] certificates, InputStream bksFile, String password) {
+    /**
+     * 信任指定证书（传入字符串）
+     */
+    public static InputStream getStrCer(Context context, String cerStr) {
+        InputStream inputStream = null;
+        inputStream = new ByteArrayInputStream(cerStr.getBytes());
+        return inputStream;
+    }
+    /**
+     * 获取 SSLParams
+     * null  null  null 为信任所有证书
+     * notnull  null  null  验证证书
+     * notnull  notnull  notnull 双向认证
+     * @param certificates 证书的inputStream 可多个
+     * @param bksFile 本地证书的inputStream
+     * @param bksPassword 本地证书的密码
+     */
+    public static SSLParams getSslSocketFactory(InputStream[] certificates, InputStream bksFile, String bksPassword) {
         SSLParams sslParams = new SSLParams();
         try {
             TrustManager[] trustManagers = prepareTrustManager(certificates);
-            KeyManager[] keyManagers = prepareKeyManager(bksFile, password);
+            KeyManager[] keyManagers = prepareKeyManager(bksFile, bksPassword);
             SSLContext sslContext = SSLContext.getInstance("TLS");
             X509TrustManager trustManager;
-            if (trustManagers != null) {
+            if (trustManagers != null) {//需要验证证书
                 trustManager = new MyTrustManager(chooseTrustManager(trustManagers));
-            } else {
+            } else {//不验证
                 trustManager = new UnSafeTrustManager();
             }
-            sslContext.init(keyManagers, new TrustManager[]{trustManager}, null);
+            sslContext.init(keyManagers, new TrustManager[]{trustManager}, null);//new SecureRandom()
             sslParams.sSLSocketFactory = sslContext.getSocketFactory();
             sslParams.trustManager = trustManager;
             return sslParams;
@@ -83,29 +103,35 @@ public class HttpsUtils {
         }
     }
 
+    /**
+     * 不验证 信任全部
+     */
     private static class UnSafeTrustManager implements X509TrustManager {
-        @SuppressLint("TrustAllX509TrustManager")
+
         @Override
-        public void checkClientTrusted(X509Certificate[] chain, String authType)
-                throws CertificateException {
+        public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
         }
 
-        @SuppressLint("TrustAllX509TrustManager")
+
         @Override
-        public void checkServerTrusted(X509Certificate[] chain, String authType)
-                throws CertificateException {
+        public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
         }
 
         @Override
         public X509Certificate[] getAcceptedIssuers() {
-            return new X509Certificate[]{};
+            return new X509Certificate[0];
         }
     }
 
+    /**
+     * 准备信任管理器
+     */
     private static TrustManager[] prepareTrustManager(InputStream... certificates) {
-        if (certificates == null || certificates.length <= 0) return null;
+        if (certificates == null || certificates.length <= 0) {
+            return null;
+        }
         try {
-
+//用我们的证书创建一个keystore
             CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
             KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
             keyStore.load(null);
@@ -114,14 +140,15 @@ public class HttpsUtils {
                 String certificateAlias = Integer.toString(index++);
                 keyStore.setCertificateEntry(certificateAlias, certificateFactory.generateCertificate(certificate));
                 try {
-                    if (certificate != null)
+                    if (certificate != null) {
                         certificate.close();
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
             TrustManagerFactory trustManagerFactory = null;
-
+//创建一个trustmanager，只信任我们创建的keystore
             trustManagerFactory = TrustManagerFactory.
                     getInstance(TrustManagerFactory.getDefaultAlgorithm());
             trustManagerFactory.init(keyStore);
@@ -142,10 +169,14 @@ public class HttpsUtils {
 
     }
 
+    /**
+     * 准备 key管理器
+     */
     private static KeyManager[] prepareKeyManager(InputStream bksFile, String password) {
         try {
-            if (bksFile == null || password == null) return null;
-
+            if (bksFile == null || password == null) {
+                return null;
+            }
             KeyStore clientKeyStore = KeyStore.getInstance("BKS");
             clientKeyStore.load(bksFile, password.toCharArray());
             KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
@@ -168,6 +199,9 @@ public class HttpsUtils {
         return null;
     }
 
+    /**
+     * 选择信任管理器
+     */
     private static X509TrustManager chooseTrustManager(TrustManager[] trustManagers) {
         for (TrustManager trustManager : trustManagers) {
             if (trustManager instanceof X509TrustManager) {
@@ -177,60 +211,89 @@ public class HttpsUtils {
         return null;
     }
 
-
+    /**
+     * 自己的的信任管理器
+     */
     private static class MyTrustManager implements X509TrustManager {
         private X509TrustManager defaultTrustManager;
         private X509TrustManager localTrustManager;
 
         public MyTrustManager(X509TrustManager localTrustManager) throws NoSuchAlgorithmException, KeyStoreException {
-            TrustManagerFactory var4 = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-            var4.init((KeyStore) null);
-            defaultTrustManager = chooseTrustManager(var4.getTrustManagers());
+            TrustManagerFactory factory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+//            TrustManagerFactory factory = TrustManagerFactory.getInstance("X509");
+            factory.init((KeyStore) null);
+            defaultTrustManager = chooseTrustManager(factory.getTrustManagers());
             this.localTrustManager = localTrustManager;
         }
 
-        @SuppressLint("TrustAllX509TrustManager")
+        /**
+         * 验证客户端证书
+         */
         @Override
         public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
 
         }
 
+        /**
+         * 验证服务端证书
+         */
         @Override
         public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+            //判断证书是否是本地信任列表里颁发的证书
             try {
                 defaultTrustManager.checkServerTrusted(chain, authType);
             } catch (CertificateException ce) {
                 localTrustManager.checkServerTrusted(chain, authType);
             }
+            //TODO add的
+            //获取网络中的证书信息
+            X509Certificate certificate = chain[0];
+            // 证书拥有者
+            String subject = certificate.getSubjectDN().getName();
+            // 证书颁发者
+            String issuer = certificate.getIssuerDN().getName();
+            Log.e("证书","证书拥有者"+subject+"\n证书颁发者"+issuer);
+            //if (!"证书拥有者".equals(subject) || !"证书颁发者".equals(issuer)){
+               // throw new CertificateException();
+            //}
+
         }
 
+        /**
+         * 得到公认的发行人
+         */
         @Override
         public X509Certificate[] getAcceptedIssuers() {
             return new X509Certificate[0];
         }
     }
 
-    //读取证书文件 Assets/cert.pem
-    public static InputStream getInputStream(Context context, String certName) {
-        InputStream inputStream = null;
-        try {
-            inputStream = context.getAssets().open(certName);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return inputStream;
-    }
-    /***********************************************************************************************/
-    /***********************************************************************************************/
-    private AllTrustManager mMyTrustManager;
 
-    //信任所有的证书
+    /**
+     * 支持okhttp明文通信  okhttpclient.connectionSpecs(?)
+     */
+    public static ArrayList<ConnectionSpec> getUnSafeConnectionSpecs() {
+        ArrayList<ConnectionSpec> connectionSpecs = new ArrayList<>();
+        ConnectionSpec unSafeConnectionSpec = new ConnectionSpec.Builder(ConnectionSpec.CLEARTEXT).build();
+        connectionSpecs.add(unSafeConnectionSpec);
+        ConnectionSpec safeConnectionSpec = new ConnectionSpec.Builder(ConnectionSpec.MODERN_TLS)
+                .tlsVersions(TlsVersion.TLS_1_2, TlsVersion.TLS_1_1, TlsVersion.TLS_1_0)
+                .build();
+        connectionSpecs.add(safeConnectionSpec);
+        return connectionSpecs;
+    }
+
+
+    /*********************************************************************************************/
+
+    /**信任所有的证书的OkHttpClient 示例*/
     public OkHttpClient getTrustAllClient() {
         OkHttpClient.Builder mBuilder = new OkHttpClient.Builder();
         mBuilder.sslSocketFactory(createSSLSocketFactory(), mMyTrustManager)
                 .hostnameVerifier(new TrustAllHostnameVerifier());
         return mBuilder.build();
     }
+    private AllTrustManager mMyTrustManager;
 
     private SSLSocketFactory createSSLSocketFactory() {
         SSLSocketFactory ssfFactory = null;
@@ -246,7 +309,7 @@ public class HttpsUtils {
         return ssfFactory;
     }
 
-    //实现X509TrustManager接口
+    /**实现X509TrustManager接口*/
     public static class AllTrustManager implements X509TrustManager {
         @Override
         public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
@@ -262,11 +325,10 @@ public class HttpsUtils {
         }
     }
 
-    //实现HostnameVerifier接口
+    /**实现HostnameVerifier接口*/
     private static class TrustAllHostnameVerifier implements HostnameVerifier {
         @Override
         public boolean verify(String hostname, SSLSession session) {
-            Log.e(hostname, session.getPeerHost());
             return true;//始终验证成功
         }
     }

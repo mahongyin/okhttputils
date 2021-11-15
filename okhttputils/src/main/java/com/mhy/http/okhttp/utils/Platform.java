@@ -18,6 +18,7 @@ package com.mhy.http.okhttp.utils;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -28,7 +29,7 @@ public class Platform
 
     public static Platform get()
     {
-        L.e(PLATFORM.getClass().toString());
+        Log.e("OkHttp",PLATFORM.getClass().toString());
         return PLATFORM;
     }
 
