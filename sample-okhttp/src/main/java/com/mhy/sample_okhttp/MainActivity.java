@@ -94,13 +94,14 @@ public class MainActivity extends AppCompatActivity {
 
         initNetStatus();
     }
-
+   private NetStatus newStatus;
     void initNetStatus() {
-        NetStatus newStatus = new NetStatus();
-        newStatus.setNetworkListener(this, new NetStatus.NetworkListener() {
+        newStatus= new NetStatus();
+        newStatus.registerObserver(this, new NetStatus.NetworkListener() {
             @Override
             public void onStatus(ConnectivityStatus status) {
-                Log.e("net状态", status.status);
+                Log.e("net状态", status.getStatus());
+                Toast.makeText(MainActivity.this,status.getStatus() , Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -365,5 +366,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         OkHttpUtils.getInstance().cancelTag(this);
+        if (newStatus!=null){
+            newStatus.unRegisterObserver(this);
+        }
     }
 }

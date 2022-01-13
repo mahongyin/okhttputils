@@ -3,8 +3,6 @@ package com.mhy.http.websocket;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
-
 import com.mhy.http.okhttp.utils.NetUtils;
 import com.mhy.http.websocket.listener.WebSoketListener;
 import java.util.concurrent.locks.Lock;
@@ -235,7 +233,7 @@ public class WebSocketUtils implements IWebSocket {
             return;
         }
 
-        if (!NetUtils.isNetworkConnected(mContext)) {
+        if (!NetUtils.isNetworkAvailable(mContext)) {
             setCurrentStatus(WebSocketStatus.DISCONNECTED);
             return;
         }
@@ -277,7 +275,7 @@ public class WebSocketUtils implements IWebSocket {
     }
 
     private synchronized void buildConnect() {
-        if (!NetUtils.isNetworkConnected(mContext)) {
+        if (!NetUtils.isNetworkAvailable(mContext)) {
             setCurrentStatus(WebSocketStatus.DISCONNECTED);
             return;
         }

@@ -1,11 +1,35 @@
 apply plugin: 'com.android.library'
 //apply plugin: 'com.novoda.bintray-release'//jcent
+apply plugin: 'com.jfrog.artifactory'
+//apply plugin: 'maven-publish'
+apply plugin: 'maven'
+def MAVEN_LOCAL_PATH ='http://tencent.a1000.top:8082/artifactory/local'
+def ARTIFACT_ID = "okhttp"//project.getName()
+def VERSION_NAME = '3.12.0'
+def GROUP_ID = 'com.mhy'
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url:MAVEN_LOCAL_PATH ){
+                authentication(userName: "${MAVEN_USER}", password:"${MAVEN_PASSWORD}")
+            }
+            pom.project {
+                groupId GROUP_ID
+                artifactId ARTIFACT_ID
+                version VERSION_NAME
+                packaging 'aar'
+            }
+        }
+    }
+}
+//gradlew clean assembleRelease artifactoryPublish --stacktrace --info
 android {
-    compileSdkVersion 28
+    compileSdkVersion 30
 
     defaultConfig {
         minSdkVersion 9
-        targetSdkVersion 28
+        targetSdkVersion 30
         versionCode 1
         versionName "1.0"
     }
@@ -50,7 +74,7 @@ makeJar.dependsOn(clearJar, build)
 
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
+   // implementation fileTree(dir: 'libs', include: ['*.jar'])
     api 'com.squareup.okhttp3:okhttp:3.12.0'
     api 'com.squareup.okio:okio:1.17.2'
 }

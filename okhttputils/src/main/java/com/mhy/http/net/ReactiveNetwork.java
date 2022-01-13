@@ -6,39 +6,41 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.util.Log;
 
-/**
+/** 21以下使用
  * ReactiveNetwork reactiveNetwork = new ReactiveNetwork() ;
- * reactiveNetwork.setNetworkEvent(new ReactiveNetwork.NetworkEvent() {
+ * reactiveNetwork.setNetworkEvent(this,new ReactiveNetwork.NetworkEvent() {
  *
  * @Override public void event(ConnectivityStatus status) {
  * textView .setText( "网络连接的类型 " + status.status);
  * }
  * });
  * reactiveNetwork.observeNetworkConnectivity( this ) ;
+ * reactiveNetwork.unObserveNetworkConnectivity( this ) ;
  */
-public class ReactiveNetwork {
+class ReactiveNetwork {
+
+    interface NetworkEvent {
+        void event(ConnectivityStatus status);
+    }
 
     private ConnectivityStatus status = ConnectivityStatus.UNKNOWN;
-    private NetworkEvent networkEvent;
 
     /**
-     * 判断链接的类型
-     *
-     * @param context
-     * @return
+     * 注册观察网络类型
      */
     private BroadcastReceiver receiver;
-    public void observeNetworkConnectivity(final Context context) {
+
+    public void observeNetworkConnectivity(final Context context, final NetworkEvent networkEvent) {
         final IntentFilter filter = new IntentFilter();
-        filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+        filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);//网络变化
          receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
+                Log.e("NetworkEvent", "onReceive: "+intent.getDataString());
                 final ConnectivityStatus newStatus = getConnectivityStatus(context);
-
-                // 我们需要在下面执行检查,
-                // 因为脱机之后，onReceive（）被调用了两次
+                // 我们需要在下面执行检查, 因为脱机之后，onReceive（）被调用了两次
                 if (newStatus != status) {
                     status = newStatus;
                     if (networkEvent != null) {
@@ -47,12 +49,10 @@ public class ReactiveNetwork {
                 }
             }
         };
-
         context.registerReceiver(receiver, filter);
     }
-
     /**
-     * 取
+     * 取消广播接收
      * @param context
      */
     public void unObserveNetworkConnectivity(final Context context) {
@@ -60,6 +60,7 @@ public class ReactiveNetwork {
             context.unregisterReceiver(receiver);
         }
     }
+
     /**
      * 获取当前的网络连接状态
      *
@@ -79,16 +80,14 @@ public class ReactiveNetwork {
             return ConnectivityStatus.WIFI_CONNECTED;
         } else if (networkInfo.getType() == ConnectivityManager.TYPE_MOBILE) {
             return ConnectivityStatus.MOBILE_CONNECTED;
+        }else if (networkInfo.getType()==ConnectivityManager.TYPE_ETHERNET){//以太网 和移动网获取ip的方式一致
+            return ConnectivityStatus.ETHERNET_CONNECTED;
+        }else if (networkInfo.getType()==ConnectivityManager.TYPE_BLUETOOTH){
+            return ConnectivityStatus.BLUETOOTH_CONNECTED;
+        }else if (networkInfo.getType()==ConnectivityManager.TYPE_VPN){
+            return ConnectivityStatus.VPN_CONNECTED;
         }
-
-        return ConnectivityStatus.OFFLINE;
+        return ConnectivityStatus.UNKNOWN;
     }
 
-    public void setNetworkEvent(NetworkEvent networkEvent) {
-        this.networkEvent = networkEvent;
-    }
-
-    public interface NetworkEvent {
-        void event(ConnectivityStatus status);
-    }
 }
