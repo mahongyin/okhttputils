@@ -393,7 +393,9 @@ protected void onDestroy()
 ```
 比如，当前Activity页面所有的请求以Activity对象作为tag，可以在onDestory里面统一取消。
 
-  //创建 websocket client
+###创建 websocket client
+wss连接测试地址: wss://socket.idcd.com:1443
+ws连接测试地址: ws://49.234.18.41:8866
   ```
                     webSocketUtils = new WebSocketUtils.Builder(getBaseContext())
                             .client(new OkHttpClient().newBuilder()

@@ -5,6 +5,7 @@ import android.app.Application;
 import com.mhy.http.okhttp.OkHttpUtils;
 import com.mhy.http.okhttp.cookie.CookieJarImpl;
 import com.mhy.http.okhttp.cookie.store.PersistentCookieStore;
+import com.mhy.http.okhttp.dns.HttpDns;
 import com.mhy.http.okhttp.dns.TimeoutDNS;
 import com.mhy.http.okhttp.https.HttpsUtils;
 import com.mhy.http.okhttp.interceptor.RetryIntercepter;

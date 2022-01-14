@@ -46,10 +46,9 @@ public class WebSocketClientService extends Service {
     private WebSocketUtils client;
     private WebSocketClientBinder mBinder = new WebSocketClientBinder();
     private final static int GRAY_SERVICE_ID = 1001;
-    private final static int SERVICE_ID = 1000;
 
     //灰色保活 26以下
-    public static class GrayInnerService extends Service {
+    private static class GrayInnerService extends Service {
         @Override
         public int onStartCommand(Intent intent, int flags, int startId) {
             startForeground(GRAY_SERVICE_ID, new Notification());
@@ -85,8 +84,6 @@ public class WebSocketClientService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        //初始化websocket
-        initSocketClient();
         Log.i("mhyLog", "服务onStartCommand");
         //设置service为前台服务，提高优先级
         if (Build.VERSION.SDK_INT < 18) {
@@ -99,7 +96,7 @@ public class WebSocketClientService extends Service {
             startForeground(GRAY_SERVICE_ID, new Notification());
         } else if (Build.VERSION.SDK_INT >= 26){
             //Android7.0以上app启动后通知栏会出现一条"正在运行"的通知
-            startForeground(GRAY_SERVICE_ID, getChannelNotification("appname","程序运行中","message"));
+            startForeground(GRAY_SERVICE_ID, getChannelNotification(getApplicationInfo().name,"程序运行中","message"));
         }
 
         acquireWakeLock();
@@ -112,91 +109,11 @@ public class WebSocketClientService extends Service {
         super.onDestroy();
     }
 
-    private static String TAG = "mhylog";
-    private WebSoketListener webSoketListener = new WebSoketListener() {
-        @Override
-        public void onOpen(Response response) {
-            //连接成功 通知
-            Log.e(TAG, "websocket连接成功");
-        }
-
-       final String message = "{\"cmd\":\"msg.ping\"}";
-
-        @Override
-        public void onMessage(String message) {
-            //接受到 文本消息
-            Log.e("JWebSocketClientService", "收到的消息：" + message);
-
-            Intent intent = new Intent();
-            intent.setAction("com.mhy.servicecallback.content");
-            intent.putExtra("message", message);
-            sendBroadcast(intent);
-
-            checkLockAndShowNotification(message);
-        }
-
-        @Override
-        public void onMessage(ByteString bytes) {
-            //接收到 文件
-        }
-
-        @Override
-        public void onReconnect() {
-            Log.d(TAG, "Websocket-----onReconnect");
-
-        }
-
-        @Override
-        public void onClosing(int code, String reason) {
-            Log.d(TAG, "Websocket-----onClosing");
-        }
-
-        @Override
-        public void onClosed(int code, String reason) {
-            Log.d(TAG, "Websocket-----onClosed");
-
-        }
-
-        @Override
-        public void onFailure(Throwable t, Response response) {
-            Log.d(TAG, "Websocket-----onFailure");
-        }
-    };
-
-    /**
-     * 初始化websocket连接
-     */
-    private void initSocketClient() {
-        connect("wss://echo.websocket.org");
-        //设置消息渠道
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationManager notifyManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-            // 第三个参数表示通知的重要程度，默认则只在通知栏闪烁一下
-            NotificationChannel channel01 = new NotificationChannel(
-                    "message", "消息通知",
-                    NotificationManager.IMPORTANCE_HIGH);
-            channel01.setLockscreenVisibility(NotificationCompat.VISIBILITY_PUBLIC);
-            // 注册通道，注册后除非卸载再安装否则不改变
-            notifyManager.createNotificationChannel(channel01);
-            NotificationChannel notificationChannel = new NotificationChannel(
-                    "notification", "通知",
-                    NotificationManager.IMPORTANCE_DEFAULT);
-            notificationChannel.setLockscreenVisibility(NotificationCompat.VISIBILITY_PUBLIC);
-            // 注册通道，注册后除非卸载再安装否则不改变
-            notifyManager.createNotificationChannel(notificationChannel);
-            NotificationChannel notification = new NotificationChannel(
-                    "subscribe", "订阅",
-                    NotificationManager.IMPORTANCE_LOW);
-            notification.setLockscreenVisibility(NotificationCompat.VISIBILITY_PUBLIC);
-            // 注册通道，注册后除非卸载再安装否则不改变
-            notifyManager.createNotificationChannel(notification);
-        }
-    }
 
     /**
      * 连接websocket
      */
-    public void connect(String url) {
+    public void connect(String url,WebSoketListener listener) {
         if (TextUtils.isEmpty(url)) {
             url = "";
         }
@@ -207,28 +124,26 @@ public class WebSocketClientService extends Service {
         //创建 websocket client
         client = new WebSocketUtils.Builder(getBaseContext())
                 .client(new OkHttpClient().newBuilder()
-                        .pingInterval(15, TimeUnit.SECONDS)//设置WebSocket连接的保活
+                        .pingInterval(15, TimeUnit.SECONDS)//设置WebSocket连接的保活15s
                         .retryOnConnectionFailure(true)
                         .build())
                 .needReconnect(true)
                 .wsUrl(url)
                 .build();
-        client.setWebSoketListener(webSoketListener);
+        client.setWebSoketListener(listener);
         client.startConnect();
 
     }
 
     /**
      * 发送消息
-     *
-     * @param msg
      */
     public boolean sendMsg(String msg) {
         if (client != null && client.isWsConnected()) {
             boolean isSend = client.sendMessage(msg);
             return isSend;
         } else {
-            Toast.makeText(getBaseContext(), "sendmsg:请先连接服务器", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getBaseContext(), "发送失败:请先连接服务器", Toast.LENGTH_SHORT).show();
         }
         return false;
     }
@@ -245,7 +160,7 @@ public class WebSocketClientService extends Service {
 
 
     //    -----------------------------------消息通知--------------------------------------------------------
-    PowerManager.WakeLock wakeLock;//锁屏唤醒
+    private PowerManager.WakeLock wakeLock;//锁屏唤醒
 
     //获取电源锁，保持该服务在屏幕熄灭时仍然获取CPU时，保持运行
     /*标记名称应使用唯一的前缀，后跟一个冒号（找到了AcquisitionWakeLock）。
@@ -260,72 +175,6 @@ public class WebSocketClientService extends Service {
         }
     }
 
-    /**
-     * 检查锁屏状态，如果锁屏先点亮屏幕
-     *
-     * @param content
-     */
-    private void checkLockAndShowNotification(String content) {
-        //管理锁屏的一个服务
-        KeyguardManager km = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
-            if (km.isKeyguardLocked()) {//锁屏
-                //获取电源管理器对象
-                PowerManager pm = (PowerManager) this.getSystemService(Context.POWER_SERVICE);
-                if (!pm.isInteractive()) {
-                    @SuppressLint("InvalidWakeLockTag") PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.ACQUIRE_CAUSES_WAKEUP | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, "bright");
-                    wl.acquire(60 * 1000L);  //点亮屏幕1分钟
-                    wl.release();  //任务结束后释放
-                }
-                sendNotification("收到消息",content,"message");
-            } else {
-                sendNotification("收到消息",content,"subscribe");
-            }
-        } else {
-            if (km.inKeyguardRestrictedInputMode()) {//锁屏
-                //获取电源管理器对象
-                PowerManager pm = (PowerManager) this.getSystemService(Context.POWER_SERVICE);
-                if (!pm.isScreenOn()) {
-                    @SuppressLint("InvalidWakeLockTag") PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.ACQUIRE_CAUSES_WAKEUP |
-                            PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "bright");
-                    wl.acquire();  //点亮屏幕
-                    wl.release();  //任务结束后释放
-                }
-                sendNotification("收到消息",content,"message");
-            } else {
-                sendNotification("收到消息",content,"subscribe");
-            }
-        }
-    }
-
-    /**
-     * 发送通知
-     *
-     * @param content
-     */
-    private void sendNotification(String title,String content,String Cannnalid) {
-        Intent intent = new Intent();
-        intent.setClass(this, SocketActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        NotificationManager notifyManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
-        NotificationCompat.Builder builder;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            builder = new NotificationCompat.Builder(this, Cannnalid);
-        } else {
-            builder = new NotificationCompat.Builder(this);
-        }
-        builder.setAutoCancel(true)
-                .setSmallIcon(R.drawable.ic_clear)
-                .setContentTitle(title)
-                .setContentText(content)
-                .setWhen(System.currentTimeMillis())
-                // 向通知添加声音、闪灯和振动效果
-                .setDefaults(Notification.DEFAULT_VIBRATE | Notification.DEFAULT_ALL | Notification.DEFAULT_SOUND)
-                .setContentIntent(pendingIntent);
-        notifyManager.notify(SERVICE_ID, builder.build());//id要保证唯一
-    }
 
     PendingIntent pendingIntent;
 

@@ -1,18 +1,24 @@
 package com.mhy.websoket;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
-import android.content.BroadcastReceiver;
+import android.app.KeyguardManager;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.PowerManager;
 import android.provider.Settings;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -23,12 +29,17 @@ import android.text.format.DateUtils;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.mhy.http.websocket.listener.WebSoketListener;
 import com.mhy.sample_okhttp.R;
+
+import okhttp3.Response;
+import okio.ByteString;
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -41,7 +52,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private TextView btn_send;
     private TextView tv_content;
     private TextView btn_disconnect, btn_connect;
-    private ChatMessageReceiver chatMessageReceiver;
 
     private ServiceConnection serviceConnection= new ServiceConnection() {
         @Override
@@ -65,9 +75,36 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         getSupportActionBar().hide();
         setContentView(R.layout.activity_socket);
         mContext = MainActivity.this;
-        initService();
+        initNotfChanal();
         findViewById();
+        initService();
         initView();
+    }
+
+    private void initNotfChanal() {
+        //设置消息渠道
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationManager notifyManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            // 第三个参数表示通知的重要程度，默认则只在通知栏闪烁一下
+            NotificationChannel channel01 = new NotificationChannel(
+                    "message", "消息通知",
+                    NotificationManager.IMPORTANCE_HIGH);
+            channel01.setLockscreenVisibility(NotificationCompat.VISIBILITY_PUBLIC);
+            // 注册通道，注册后除非卸载再安装否则不改变
+            notifyManager.createNotificationChannel(channel01);
+            NotificationChannel notificationChannel = new NotificationChannel(
+                    "notification", "通知",
+                    NotificationManager.IMPORTANCE_DEFAULT);
+            notificationChannel.setLockscreenVisibility(NotificationCompat.VISIBILITY_PUBLIC);
+            // 注册通道，注册后除非卸载再安装否则不改变
+            notifyManager.createNotificationChannel(notificationChannel);
+            NotificationChannel notification = new NotificationChannel(
+                    "subscribe", "订阅",
+                    NotificationManager.IMPORTANCE_LOW);
+            notification.setLockscreenVisibility(NotificationCompat.VISIBILITY_PUBLIC);
+            // 注册通道，注册后除非卸载再安装否则不改变
+            notifyManager.createNotificationChannel(notification);
+        }
     }
 
     private void initService() {
@@ -75,8 +112,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         startJWebSClientService();
         //绑定服务
         bindService();
-        //注册广播
-        doRegisterReceiver();
         //检测通知是否开启
         checkNotification(mContext);
     }
@@ -94,49 +129,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * 绑定服务
      */
     private void bindService() {
-//        serviceConnection = new ServiceConnection() {
-//            @Override
-//            public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-//                Log.e("mhylog", "服务与活动成功绑定");
-//                binder = (WebSocketClientService.WebSocketClientBinder) iBinder;
-//                jWebSClientService = binder.getService();
-////                client = jWebSClientService.client;
-//            }
-//
-//            @Override
-//            public void onServiceDisconnected(ComponentName componentName) {
-//                Log.e("mhylog", "服务与活动成功断开");
-//            }
-//        };
         Intent bindIntent = new Intent(mContext, WebSocketClientService.class);
         bindService(bindIntent, serviceConnection, BIND_AUTO_CREATE);
     }
 
-    /**
-     * 动态注册广播
-     */
-    private void doRegisterReceiver() {
-        chatMessageReceiver = new ChatMessageReceiver();
-        IntentFilter filter = new IntentFilter("com.mhy.servicecallback.content");
-        registerReceiver(chatMessageReceiver, filter);
-    }
-
-    /**
-     * 广播接收
-     */
-    private class ChatMessageReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String message = intent.getStringExtra("message");
-            //接受到 文本消息
-            tv_content.append(Spanny
-                    .spanText("服务器 " + DateUtils.formatDateTime(getBaseContext(), System.currentTimeMillis(),
-                            DateUtils.FORMAT_SHOW_TIME) + "\n",
-                            new ForegroundColorSpan(
-                                    ContextCompat.getColor(getBaseContext(), R.color.colorPrimary))));
-            tv_content.append(message + "\n\n");
-        }
-    }
 
     private void findViewById() {
         btn_send = findViewById(R.id.btn_send);
@@ -203,7 +199,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.btn_connect:
                 if (jWebSClientService != null) {
-                    jWebSClientService.connect(edit_url.getText().toString());
+                    jWebSClientService.connect(edit_url.getText().toString(),webSoketListener);
                 }
                 break;
             case R.id.btn_disconnect:
@@ -215,6 +211,123 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
         }
     }
+    /**
+     * 检查锁屏状态，如果锁屏先点亮屏幕
+     */
+    private void checkLockAndShowNotification(String content) {
+        //管理锁屏的一个服务
+        KeyguardManager km = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+            if (km.isKeyguardLocked()) {//锁屏
+                //获取电源管理器对象
+                PowerManager pm = (PowerManager) this.getSystemService(Context.POWER_SERVICE);
+                if (!pm.isInteractive()) {
+                    @SuppressLint("InvalidWakeLockTag") PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.ACQUIRE_CAUSES_WAKEUP | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, "bright");
+                    wl.acquire(60 * 1000L);  //点亮屏幕1分钟
+                    wl.release();  //任务结束后释放
+                }
+                sendNotification("收到消息",content,"message");
+            } else {
+                sendNotification("收到消息",content,"subscribe");
+            }
+        } else {
+            if (km.inKeyguardRestrictedInputMode()) {//锁屏
+                //获取电源管理器对象
+                PowerManager pm = (PowerManager) this.getSystemService(Context.POWER_SERVICE);
+                if (!pm.isScreenOn()) {
+                    @SuppressLint("InvalidWakeLockTag") PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.ACQUIRE_CAUSES_WAKEUP |
+                            PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "bright");
+                    wl.acquire();  //点亮屏幕
+                    wl.release();  //任务结束后释放
+                }
+                sendNotification("收到消息",content,"message");
+            } else {
+                sendNotification("收到消息",content,"subscribe");
+            }
+        }
+    }
+
+    /**
+     * 发送通知
+     *
+     * @param content
+     */
+    private void sendNotification(String title,String content,String Cannnalid) {
+        Intent intent = new Intent();
+        intent.setClass(this, SocketActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        NotificationManager notifyManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        NotificationCompat.Builder builder;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            builder = new NotificationCompat.Builder(this, Cannnalid);
+        } else {
+            builder = new NotificationCompat.Builder(this);
+        }
+        builder.setAutoCancel(true)
+                .setSmallIcon(R.drawable.ic_clear)
+                .setContentTitle(title)
+                .setContentText(content)
+                .setWhen(System.currentTimeMillis())
+                // 向通知添加声音、闪灯和振动效果
+                .setDefaults(Notification.DEFAULT_VIBRATE | Notification.DEFAULT_ALL | Notification.DEFAULT_SOUND)
+                .setContentIntent(pendingIntent);
+        notifyManager.notify(SERVICE_ID, builder.build());
+    }
+    private final static int SERVICE_ID = 1000;
+    private static String TAG = "mhylog";
+    private WebSoketListener webSoketListener = new WebSoketListener() {
+        @Override
+        public void onOpen(Response response) {
+            //连接成功 通知
+            Log.e(TAG, "websocket连接成功");
+            tv_content.append(Spanny.spanText("服务器连接成功\n\n", new ForegroundColorSpan(ContextCompat.getColor(getBaseContext(), R.color.colorPrimary))));
+        }
+
+        final String message = "{\"cmd\":\"msg.ping\"}";
+
+        @Override
+        public void onMessage(String message) {
+            //接受到 文本消息
+            Log.e("JWebSocketClientService", "收到的消息：" + message);
+            checkLockAndShowNotification(message);
+            //接受到 文本消息
+            tv_content.append(Spanny
+                    .spanText("服务器 " + DateUtils.formatDateTime(getBaseContext(), System.currentTimeMillis(),
+                            DateUtils.FORMAT_SHOW_TIME) + "\n",
+                            new ForegroundColorSpan(
+                                    ContextCompat.getColor(getBaseContext(), R.color.colorPrimary))));
+            tv_content.append(message + "\n\n");
+        }
+
+        @Override
+        public void onMessage(ByteString bytes) {
+            //接收到 文件
+        }
+
+        @Override
+        public void onReconnect() {
+            Log.d(TAG, "Websocket-----onReconnect");
+
+        }
+
+        @Override
+        public void onClosing(int code, String reason) {
+            Log.d(TAG, "Websocket-----onClosing");
+        }
+
+        @Override
+        public void onClosed(int code, String reason) {
+            Log.d(TAG, "Websocket-----onClosed");
+
+        }
+
+        @Override
+        public void onFailure(Throwable t, Response response) {
+            Log.d(TAG, "Websocket-----onFailure");
+        }
+    };
 
 
     //隐藏 键盘
@@ -225,8 +338,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
-        unregisterReceiver(chatMessageReceiver);
 
         stopService(new Intent(mContext, WebSocketClientService.class));
         if (serviceConnection!=null){

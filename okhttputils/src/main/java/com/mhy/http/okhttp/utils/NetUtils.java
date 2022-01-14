@@ -31,6 +31,9 @@ public class NetUtils {
     private enum NetworkType {
         // wifi
         NETWORK_WIFI,
+        //以太网
+        NETWORK_ETHERNET,
+        NETWORK_VPN,
         // 5G 网
         NETWORK_5G,
         // 4G 网
@@ -54,7 +57,11 @@ public class NetUtils {
         NetworkType netType = NetworkType.NETWORK_NO;
         NetworkInfo info = getActiveNetworkInfo(context);
         if (info != null && info.isAvailable()) {
-            if (info.getType() == ConnectivityManager.TYPE_WIFI) {
+            if (info.getType() == ConnectivityManager.TYPE_VPN) {
+                netType = NetworkType.NETWORK_VPN;
+            } else if (info.getType() == ConnectivityManager.TYPE_ETHERNET) {
+                netType = NetworkType.NETWORK_ETHERNET;
+            } else if (info.getType() == ConnectivityManager.TYPE_WIFI) {
                 netType = NetworkType.NETWORK_WIFI;
             } else if (info.getType() == ConnectivityManager.TYPE_MOBILE) {
                 switch (info.getSubtype()) {
@@ -107,40 +114,34 @@ public class NetUtils {
         }
         return netType;
     }
-
     /**
      * 获取网络运营商名称
      * <p>中国移动、如中国联通、中国电信</p>
-     *
-     * @return 运营商名称
      */
     public String getNetworkOperatorName(Context context) {
         TelephonyManager tm = (TelephonyManager) context.getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
         return tm != null ? tm.getNetworkOperatorName() : null;
     }
-
-
-    //检查网络是否连接 isConnected 网路连接
-    public static boolean isNetworkConnected(Context context) {
-        NetworkInfo mNetworkInfo = getActiveNetworkInfo(context);
-        if (mNetworkInfo != null) {
-            //isAvailable表示网络是否可用（与当前有没有连接没关系,包含连上WiFi无网）
-            return mNetworkInfo.isConnected();//只判断是否建立连接网络通道，例如局域网。和有没有网络数据没关系
-        }
-
-        return false;
-    }
-
-    //检查网络是否 isAvailable网络可用
-    public static boolean isNetworkAvailable(Context context) {
-        NetworkInfo mNetworkInfo = getActiveNetworkInfo(context);
-        if (mNetworkInfo != null) {
-            return mNetworkInfo.isAvailable();//isAvailable表示网络是否可用（与当前有没有连接没关系,包含连上WiFi无网）
-        }
-        return false;
-    }
-
-    private static ConnectivityManager getConnectivityManager(Context context) {
+    //    <uses-permission android:name="android.permission.READ_PRIVILEGED_PHONE_STATE" />
+//    public String getNetWorkoperator(Context mcontext) {
+//        TelephonyManager telephonyManager = (TelephonyManager) mcontext.getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
+//        String IMSI = telephonyManager.getSubscriberId();//获取SIM卡的IMSI
+//        if (IMSI != null && IMSI.length() > 0) {
+//            if (IMSI.substring(0, 5).equals("46000") || IMSI.substring(0, 5).equals("46002")) {
+//                //通过前五位判断连的wifi或者数据流量是移动、联通还是电信
+//                //移动
+//                return "中国移动";
+//            } else if (IMSI.substring(0, 5).equals("46001")) {
+//                //联通
+//                return "中国联通";
+//            } else if (IMSI.substring(0, 5).equals("46003")) {
+//                //电信
+//                return "中国电信";
+//            }
+//        }
+//        return "未知";
+//    }
+    public static ConnectivityManager getConnectivityManager(Context context) {
         if (context != null) {
             return (ConnectivityManager) context.getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
         }
@@ -148,25 +149,107 @@ public class NetUtils {
     }
 
     //23以下
-    private static NetworkInfo getActiveNetworkInfo(Context context) {
-        NetworkInfo mNetworkInfo = getConnectivityManager(context).getActiveNetworkInfo();
-        if (mNetworkInfo != null) {
-            return mNetworkInfo;
+    public static NetworkInfo getActiveNetworkInfo(Context context) {
+        ConnectivityManager connectivityManager = getConnectivityManager(context);
+        if (connectivityManager != null) {
+            NetworkInfo mNetworkInfo = connectivityManager.getActiveNetworkInfo();
+            if (mNetworkInfo != null) {
+                return mNetworkInfo;
+            }
         }
         return null;
     }
 
     //SDK>=23
-    private static NetworkCapabilities getNetworkCapabilities(Context context) {
+    public static NetworkCapabilities getNetworkCapabilities(Context context) {
         ConnectivityManager cm = getConnectivityManager(context);
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            Network network = cm.getActiveNetwork();
+            Network network = cm.getActiveNetwork();//活跃的网络
             if (network != null) {
                 NetworkCapabilities nc = cm.getNetworkCapabilities(network);
                 return nc;
             }
         }
         return null;
+    }
+
+
+    //检查网络是否连接 isConnected 网路连接
+    public static boolean isNetworkConnected(Context context) {
+        NetworkInfo mNetworkInfo = getActiveNetworkInfo(context);
+        if (mNetworkInfo != null) {
+            return mNetworkInfo.isConnected();//只判断是否建立连接网络通道，例如局域网。和有没有网络数据没关系
+        }
+        return false;
+    }
+
+    //检查网络是否 isAvailable网络可用
+    public static boolean isNetworkAvailable(Context context) {
+        NetworkInfo mNetworkInfo = getActiveNetworkInfo(context);
+        if (mNetworkInfo != null) {
+            return /*mNetworkInfo.isConnected() &&*/ mNetworkInfo.isAvailable();//isAvailable表示网络是否可用
+        }
+        return false;
+    }
+
+    /**
+     * 判断 wifi 是否连接
+     *
+     * @return {@code true}: 连接<br>{@code false}: 未连接
+     */
+    public static boolean isWifiConnect(Context context) {
+        if (context != null) {
+            NetworkInfo mWiFiNetworkInfo = getActiveNetworkInfo(context);
+            if (mWiFiNetworkInfo != null) {
+                if (mWiFiNetworkInfo.getType() == ConnectivityManager.TYPE_WIFI) {//WIFI
+                    return mWiFiNetworkInfo.isConnected();
+                }
+            }
+        }
+        return false;
+    }
+
+    public static boolean isWifiisAvailable(Context context) {
+        if (context != null) {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+                NetworkInfo mWiFiNetworkInfo = getActiveNetworkInfo(context);
+                if (mWiFiNetworkInfo != null) {
+                    if (mWiFiNetworkInfo.getType() == ConnectivityManager.TYPE_WIFI) {//WIFI
+                        return mWiFiNetworkInfo.isAvailable();
+                    }
+                }
+            } else {//>=M
+                NetworkCapabilities nc = getNetworkCapabilities(context);
+                if (nc != null) {
+                    if (nc.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {//WIFI
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 判断移动数据是否可用
+     *
+     * @return {@code true}: 是<br>{@code false}: 否
+     */
+    public static boolean isMobileisAvailable(Context context) {
+        if (Build.VERSION.SDK_INT < 23) {
+            NetworkInfo info = getActiveNetworkInfo(context);
+            if (info != null && info.getType() == ConnectivityManager.TYPE_MOBILE) {
+                return info.isAvailable();
+            }
+        } else {
+            NetworkCapabilities nc = getNetworkCapabilities(context);
+            if (nc != null) {
+                if (nc.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {//蜂窝
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -183,35 +266,6 @@ public class NetUtils {
             }
         } catch (Exception e) {
             e.printStackTrace();
-        }
-        return false;
-    }
-
-    /**
-     * 判断 wifi 是否连接
-     *
-     * @return {@code true}: 连接<br>{@code false}: 未连接
-     */
-    public static boolean isWifiConnect(Context context) {
-        if (context != null) {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-                NetworkInfo mWiFiNetworkInfo = getActiveNetworkInfo(context);
-                if (mWiFiNetworkInfo != null) {
-                    if (mWiFiNetworkInfo.getType() == ConnectivityManager.TYPE_WIFI) {//WIFI
-//                        return true;
-                        return mWiFiNetworkInfo.isConnected();//&&mWiFiNetworkInfo.isAvailable();
-                    }
-                }
-            } else {//>=M
-                NetworkCapabilities nc = getNetworkCapabilities(context);
-                if (nc != null) {
-                    if (nc.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {//WIFI
-                        return true;
-                    }
-                }
-
-            }
-
         }
         return false;
     }
@@ -259,39 +313,6 @@ public class NetUtils {
                 wifiManager.setWifiEnabled(false);
             }
         }
-    }
-
-
-    /**
-     * 是否连接状态
-     */
-    public static boolean isConnected(Context context) {
-        if (context != null) {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-                NetworkInfo mWiFiNetworkInfo = getActiveNetworkInfo(context);
-                if (mWiFiNetworkInfo != null) {
-                    if (mWiFiNetworkInfo.getType() == ConnectivityManager.TYPE_WIFI) {//WIFI
-                        return true;
-                    } else if (mWiFiNetworkInfo.getType() == ConnectivityManager.TYPE_MOBILE) {//移动数据
-                        return true;
-                    } else if (mWiFiNetworkInfo.getType() == ConnectivityManager.TYPE_ETHERNET) {//以太网
-                        return true;
-                    }
-                }
-            } else {
-                NetworkCapabilities nc = getNetworkCapabilities(context);
-                if (nc != null) {
-                    if (nc.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {//WIFI
-                        return true;
-                    } else if (nc.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {//移动数据
-                        return true;
-                    } else if (nc.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {//以太网
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
     }
 
     /**

@@ -6,9 +6,12 @@ import android.net.ConnectivityManager;
 import android.net.LinkProperties;
 import android.net.Network;
 import android.net.NetworkCapabilities;
+import android.net.NetworkInfo;
 import android.net.NetworkRequest;
 import android.os.Build;
 import android.util.Log;
+
+import com.mhy.http.okhttp.utils.NetUtils;
 
 /**
  * @author mahongyin
@@ -27,6 +30,43 @@ public class NetStatus {
         void onStatus(ConnectivityStatus status);
     }
 
+    public static ConnectivityStatus getNetType(Context context) {
+        if (context != null) {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+                NetworkInfo networkInfo = NetUtils.getActiveNetworkInfo(context);
+                if (networkInfo != null && networkInfo.isAvailable()) {
+                    if (networkInfo.getType() == ConnectivityManager.TYPE_WIFI) {//WIFI
+                        return ConnectivityStatus.WIFI_CONNECTED;
+                    } else if (networkInfo.getType() == ConnectivityManager.TYPE_MOBILE) {//移动数据
+                        return ConnectivityStatus.MOBILE_CONNECTED;
+                    } else if (networkInfo.getType() == ConnectivityManager.TYPE_ETHERNET) {//以太网
+                        return ConnectivityStatus.ETHERNET_CONNECTED;
+                    } else if (networkInfo.getType() == ConnectivityManager.TYPE_VPN) {
+                        return ConnectivityStatus.VPN_CONNECTED;
+                    } else {
+                        return ConnectivityStatus.UNKNOWN;
+                    }
+                }
+            } else {
+                NetworkCapabilities nc = NetUtils.getNetworkCapabilities(context);
+                if (nc != null) {
+                    if (nc.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {//WIFI
+                        return ConnectivityStatus.WIFI_CONNECTED;
+                    } else if (nc.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {//移动数据
+                        return ConnectivityStatus.MOBILE_CONNECTED;
+                    } else if (nc.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {//以太网
+                        return ConnectivityStatus.ETHERNET_CONNECTED;
+                    } else if (nc.hasTransport(NetworkCapabilities.TRANSPORT_VPN)) {
+                        return ConnectivityStatus.VPN_CONNECTED;
+                    } else {
+                        return ConnectivityStatus.UNKNOWN;
+                    }
+                }
+            }
+        }
+        return ConnectivityStatus.OFFLINE;
+    }
+
     private NetworkListener networkEvent;
     private ReactiveNetwork reactiveNetwork;
     private ConnectivityManager connectivityManager;
@@ -41,8 +81,8 @@ public class NetStatus {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             if (connectivityManager != null) {
                 connectivityManager.unregisterNetworkCallback(networkCallback);
+                return;
             }
-            return;
         }
         if (reactiveNetwork != null) {
             reactiveNetwork.unObserveNetworkConnectivity(context);
@@ -55,6 +95,9 @@ public class NetStatus {
             connectivityManager = (ConnectivityManager) context.getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
             // 请注意这里会有一个版本适配bug，所以请在这里添加非空判断
             if (connectivityManager != null) {
+//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//                    connectivityManager.registerDefaultNetworkCallback(networkCallback);
+//                }
                 NetworkRequest.Builder builder = new NetworkRequest.Builder();
                 NetworkRequest request = builder.addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
                         .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
@@ -63,13 +106,10 @@ public class NetStatus {
                         .addTransportType(NetworkCapabilities.TRANSPORT_VPN)
                         .addTransportType(NetworkCapabilities.TRANSPORT_BLUETOOTH)
                         .build();
-//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//                    connectivityManager.registerDefaultNetworkCallback(networkCallback);
-//                }
+//                connectivityManager.getDefaultProxy();
                 connectivityManager.registerNetworkCallback(request, networkCallback);
-
+                return;
             }
-            return;
         }
         //21以下 不适配上面 就用旧的广播方式
         reactiveNetwork = new ReactiveNetwork();

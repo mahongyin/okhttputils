@@ -84,7 +84,7 @@ public class SocketActivity extends AppCompatActivity {
 //            new DownloadTask(bytes1,path,begin+"."+end).execute();
             //接收到 文件
         }
-
+//下载任务
         class DownloadTask extends AsyncTask<Void, Integer, File> {
             byte[] bytes;
             String dirPath;
@@ -276,6 +276,7 @@ public class SocketActivity extends AppCompatActivity {
         btn_connect = (Button) findViewById(R.id.btn_connect);
         btn_disconnect = (Button) findViewById(R.id.btn_disconnect);
         edit_url = (EditText) findViewById(R.id.edit_url);
+        edit_url.setText("ws://49.234.18.41:8866");
         edit_content = (EditText) findViewById(R.id.edit_content);
         imv = findViewById(R.id.imv);
 
@@ -303,7 +304,7 @@ public class SocketActivity extends AppCompatActivity {
                 //调起浏览器更新app
                 Intent intent = new Intent();
                 intent.setAction("android.intent.action.VIEW");
-                Uri url = Uri.parse("https://github.com/mahongyin");
+                Uri url = Uri.parse("https://gitee.com/mahongyin");
                 intent.setData(url);
                 startActivity(intent);
                 break;

@@ -1,5 +1,6 @@
 package com.mhy.sample_okhttp;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Environment;
@@ -20,6 +21,7 @@ import com.mhy.http.okhttp.callback.FileCallBack;
 import com.mhy.http.okhttp.callback.GenericsCallback;
 import com.mhy.http.okhttp.callback.StringCallback;
 import com.mhy.http.okhttp.cookie.CookieJarImpl;
+import com.mhy.http.okhttp.utils.NetUtils;
 
 import java.io.File;
 import java.util.HashMap;
@@ -40,6 +42,13 @@ public class MainActivity extends AppCompatActivity {
     private TextView mTv;
     private ImageView mImageView;
     private ProgressBar mProgressBar;
+
+    public void webSocket1(View view) {
+        startActivity(new Intent(this, com.mhy.websoket.MainActivity.class));
+    }
+    public void webSocket2(View view) {
+        startActivity(new Intent(this, com.mhy.websoket.SocketActivity.class));
+    }
 
 
     public class MyStringCallback extends StringCallback {
@@ -97,13 +106,15 @@ public class MainActivity extends AppCompatActivity {
    private NetStatus newStatus;
     void initNetStatus() {
         newStatus= new NetStatus();
-        newStatus.registerObserver(this, new NetStatus.NetworkListener() {
-            @Override
-            public void onStatus(ConnectivityStatus status) {
-                Log.e("net状态", status.getStatus());
-                Toast.makeText(MainActivity.this,status.getStatus() , Toast.LENGTH_SHORT).show();
-            }
-        });
+//        newStatus.registerObserver(this, new NetStatus.NetworkListener() {
+//            @Override
+//            public void onStatus(ConnectivityStatus status) {
+//                Log.e("net状态", status.getStatus());
+//                Toast.makeText(MainActivity.this,status.getStatus() , Toast.LENGTH_SHORT).show();
+//            }
+//        });
+        Toast.makeText(MainActivity.this,NetStatus.getNetType(this).getStatus() , Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, "当前是移动网络="+NetUtils.isMobileisAvailable(this), Toast.LENGTH_SHORT).show();
     }
 
     public void getHtml(View view) {
@@ -160,8 +171,8 @@ public class MainActivity extends AppCompatActivity {
         OkHttpUtils
                 .post()//
                 .url(url)//
-                .addParams("username", "mhy")//
-                .addParams("password", "123")//
+                .addParams("username", "name")//
+                .addParams("password", "password")//
                 .build()//
                 .execute(new GenericsCallback<User>(new GsonGenericsSerializator()) {
                     @Override
@@ -263,7 +274,7 @@ public class MainActivity extends AppCompatActivity {
         headers.put("APP-Key", "APP-Secret222");
         headers.put("APP-Secret", "APP-Secret111");
 
-        String url = "https://a1000.top/up/index.php";
+        String url = "https://a1000.top/up";
 
         OkHttpUtils.post()//
                 .addFile("file", "parser0.jpg", file)//

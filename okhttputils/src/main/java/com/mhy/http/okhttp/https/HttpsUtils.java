@@ -245,7 +245,7 @@ public class HttpsUtils {
             } catch (CertificateException ce) {
                 localTrustManager.checkServerTrusted(chain, authType);
             }
-            //TODO add的
+            //mhyTag add的
             //获取网络中的证书信息
             X509Certificate certificate = chain[0];
             // 证书拥有者
@@ -253,6 +253,7 @@ public class HttpsUtils {
             // 证书颁发者
             String issuer = certificate.getIssuerDN().getName();
             Log.e("证书","证书拥有者"+subject+"\n证书颁发者"+issuer);
+            //TODO
             //if (!"证书拥有者".equals(subject) || !"证书颁发者".equals(issuer)){
                // throw new CertificateException();
             //}
@@ -270,7 +271,7 @@ public class HttpsUtils {
 
 
     /**
-     * 支持okhttp明文通信  okhttpclient.connectionSpecs(?)
+     * 支持okhttp明文通信  okhttpclient.connectionSpecs(.getUnSafeConnectionSpecs())
      */
     public static ArrayList<ConnectionSpec> getUnSafeConnectionSpecs() {
         ArrayList<ConnectionSpec> connectionSpecs = new ArrayList<>();
@@ -284,7 +285,7 @@ public class HttpsUtils {
     }
 
 
-    /*********************************************************************************************/
+    /************************************* 信任所有证书 *******************************************/
 
     /**信任所有的证书的OkHttpClient 示例*/
     public OkHttpClient getTrustAllClient() {
