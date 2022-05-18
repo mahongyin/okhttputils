@@ -8,6 +8,7 @@ def ARTIFACT_ID = "okhttp"//project.getName()
 def VERSION_NAME = '3.12.13'
 def GROUP_ID = 'com.mhy'
 
+//直接执行这里
 uploadArchives {
     repositories {
         mavenDeployer {
