@@ -72,6 +72,7 @@ public class MyApplication extends Application {
         // 指定缓存路径,缓存大小30Mb
 //        Cache cache = new Cache(new File(getCacheDir(),"Httpcache"), 1024 * 1024 * 30);
 //        Cache cache = new Cache(new File(Environment.getExternalStorageDirectory(), "Httpcache"), 1024 * 1024 * 30);
+        //会将header保存 实现session
         CookieJarImpl cookieJar = new CookieJarImpl(new PersistentCookieStore(getApplicationContext())); //配置cookie //持久化cookie
         Cache cache = new Cache(new File(getExternalCacheDir(), "Httpcache"), 1024 * 1024 * 30);
         HttpsUtils.SSLParams sslParams = HttpsUtils.getSslSocketFactory(null, null, null);

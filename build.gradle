@@ -5,8 +5,8 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.6.4'
-       // classpath 'com.novoda:bintray-release:0.9.1'
-//        classpath 'com.github.dcendents:android-maven-gradle-plugin:2.1'
+        // classpath 'com.novoda:bintray-release:0.9.1'
+        classpath 'com.github.dcendents:android-maven-gradle-plugin:2.1'
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4'
         classpath "org.jfrog.buildinfo:build-info-extractor-gradle:4.9.5"//3.1.1
     }
@@ -27,13 +27,17 @@ allprojects {
             failOnError false
         }
     }
-//    tasks.withType(Javadoc).all {
+//    tasks.withType(Javadoc).all {//不要doc?
 //        enabled = false
 //    }
-        //避免javadoc的检查，防止上传时报错
+    //避免javadoc的检查，防止上传时报错
     //   tasks.withType(Javadoc) {
     //      options.addStringOption('Xdoclint:none', '-quiet')
     //      options.addStringOption('encoding', 'UTF-8')
     //  }
-}
 
+}
+//Java编译时采用UTF-8
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}

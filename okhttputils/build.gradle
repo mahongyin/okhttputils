@@ -5,7 +5,7 @@ apply plugin: 'com.jfrog.artifactory'
 apply plugin: 'maven'
 def MAVEN_LOCAL_PATH ='http://tencent.a1000.top:8082/artifactory/local'
 def ARTIFACT_ID = "okhttp"//project.getName()
-def VERSION_NAME = '3.12.0'
+def VERSION_NAME = '3.12.13'
 def GROUP_ID = 'com.mhy'
 
 uploadArchives {
@@ -31,7 +31,7 @@ android {
         minSdkVersion 9
         targetSdkVersion 30
         versionCode 1
-        versionName "1.0"
+        versionName VERSION_NAME
     }
     buildTypes {
         release {
@@ -75,6 +75,8 @@ makeJar.dependsOn(clearJar, build)
 
 dependencies {
    // implementation fileTree(dir: 'libs', include: ['*.jar'])
-    api 'com.squareup.okhttp3:okhttp:3.12.0'
-    api 'com.squareup.okio:okio:1.17.2'
+    api 'com.squareup.okhttp3:okhttp:3.12.13'
+
+    api 'com.squareup.okio:okio:1.17.5'
+    //api 'com.squareup.okio:okio:1.14.1'
 }

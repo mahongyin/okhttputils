@@ -18,8 +18,8 @@ public class HttpHost {
 
     public static void replaceOriginalRequest(Call call, Request request) {
         HttpUrl httpUrl = request.url().newBuilder()
-                .host("目标host")
-                .scheme("http")
+                .host("www.baidu.com")
+                .scheme("https")
                 .build();
         Request newRequest = request.newBuilder()
                 .url(httpUrl)

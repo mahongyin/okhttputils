@@ -4,14 +4,16 @@
 
 对okhttp的封装类，okhttp见：[https://github.com/square/okhttp](https://github.com/square/okhttp).
 
-目前对应okhttp版本`3.12.0`.
+目前对应okhttp版本`3.12.13最后一版支持Android 2.3+
+
+OkHttp 3.13 Requires Android 5+ 从3.13+开始，取消SSL3的支持,支持TLS1.3
 
 ## 用法
 
 * Android Studio
 	
 	```
-	compile 'com.mhy:okhttp:3.12.0'
+	compile 'com.mhy:okhttp:3.12.13'
 	```
 	
 * Eclipse
@@ -20,10 +22,11 @@
 
 	注：需要同时导入okhttp和okio的jar，下载见：[https://github.com/square/okhttp](https://github.com/square/okhttp).
 	
+	**自己再封装隔离层，方便切换其他网络框架**
 
 ## 目前对以下需求进行了封装
 * 一般的get请求
-* 一般的post请求
+* 一般的post请求、post json string
 * 基于Http Post的文件上传（类似表单）
 * 文件下载/加载图片
 * 上传下载的进度回调
@@ -182,7 +185,7 @@ GsonGenericsSerializator
     .postString()
     .url(url)
     .content(new Gson().toJson(new User("zhy", "123")))
-     .mediaType(MediaType.parse("application/json; charset=utf-8"))
+    //默认.mediaType(MediaType.parse("application/json; charset=utf-8"))
     .build()
     .execute(new MyStringCallback());
 ```
@@ -417,7 +420,7 @@ ws连接测试地址: ws://49.234.18.41:8866
  private WebSoketListener webSoketListener = new WebSoketListener() {
 .......
 }
- ```                   
+  ```
 ## 混淆
 
 ```
@@ -437,7 +440,6 @@ ws连接测试地址: ws://49.234.18.41:8866
 
 
 ```
-
 
 
 

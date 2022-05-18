@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 import okhttp3.Dns;
 
 /**
- * Created by LEO
+ * @author mahongyin
  * On 2019/6/18
  * Description:带超时机制的DNS解析
  */
