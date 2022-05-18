@@ -58,6 +58,8 @@ public class MyApplication extends Application {
         @Override
         public List<Proxy> select(URI uri) {
 //            DebugLog.e("url"+uri.getHost());
+//wifi只能设置一个代理  蜂窝网络可以设置多个  
+//可以根据uri值针对敏感接口返回null,不敏感接口就使用默认代理
             return getDefault().select(uri); //null 不要任何代理
         }
 
