@@ -1,26 +1,28 @@
 apply plugin: 'com.android.library'
 apply plugin: 'com.jfrog.artifactory'
 apply plugin: 'maven'
+apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: 'maven-publish'//jitpack
 def MAVEN_LOCAL_PATH ='http://tencent.a1000.top:8082/artifactory/local'
 def ARTIFACT_ID = "okhttp"//project.getName()
 def VERSION_NAME = '3.12.13'
 def GROUP_ID = 'com.mhy'
 //私库直接执行这里
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            repository(url:MAVEN_LOCAL_PATH ){
-               // authentication(userName: "${MAVEN_USER}", password:"${MAVEN_PASSWORD}")
-            }
-            pom.project {
-                groupId GROUP_ID
-                artifactId ARTIFACT_ID
-                version VERSION_NAME
-                packaging 'aar'
-            }
-        }
-    }
-}
+//uploadArchives {
+//    repositories {
+//        mavenDeployer {
+//            repository(url:MAVEN_LOCAL_PATH ){
+//                authentication(userName: "${MAVEN_USER}", password:"${MAVEN_PASSWORD}")
+//            }
+//            pom.project {
+//                groupId GROUP_ID
+//                artifactId ARTIFACT_ID
+//                version VERSION_NAME
+//                packaging 'aar'
+//            }
+//        }
+//    }
+//}
 /*****************jitpack***************/
 //添加发布到jitpack脚本
 apply from :"../jitpack.gradle"
