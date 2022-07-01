@@ -1,13 +1,11 @@
 apply plugin: 'com.android.library'
-//apply plugin: 'com.novoda.bintray-release'//jcent
 apply plugin: 'com.jfrog.artifactory'
-//apply plugin: 'maven-publish'
+apply plugin: 'maven-publish'//jitpack
 apply plugin: 'maven'
 def MAVEN_LOCAL_PATH ='http://tencent.a1000.top:8082/artifactory/local'
 def ARTIFACT_ID = "okhttp"//project.getName()
 def VERSION_NAME = '3.12.13'
 def GROUP_ID = 'com.mhy'
-
 //直接执行这里
 uploadArchives {
     repositories {
@@ -24,6 +22,22 @@ uploadArchives {
         }
     }
 }
+/*****************jitpack***************/
+group='com.gitee.mahongyin'
+version = '3.12.13'
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
+                groupId = 'com.github.mahongyin'
+                artifactId = ARTIFACT_ID
+                version = VERSION_NAME
+            }
+        }
+    }
+}
+
 //gradlew clean assembleRelease artifactoryPublish --stacktrace --info
 android {
     compileSdkVersion 30
