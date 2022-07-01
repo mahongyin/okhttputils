@@ -1,6 +1,6 @@
 # okhttp-utils
 
->本项目基于hongyangAndroid的okhttputils
+>本项目基于hongyangAndroid的[okhttputils](https://github.com/hongyangAndroid/okhttputils)
 
 对okhttp的封装类，okhttp见：[https://github.com/square/okhttp](https://github.com/square/okhttp).
 
@@ -8,6 +8,7 @@
 
 OkHttp 3.13 Requires Android 5+ 从3.13+开始，取消SSL3的支持,支持TLS1.3
 
+[![](https://jitpack.io/v/com.gitee.mahongyin/okhttputils.svg)](https://jitpack.io/#com.gitee.mahongyin/okhttputils)
 ## 用法
 
 * Android Studio
