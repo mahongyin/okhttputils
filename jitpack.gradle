@@ -1,3 +1,26 @@
+//apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: 'maven-publish'//jitpack
+
+/*****************jitpack***************/
+def VERSION_NAME = '3.12.13'
+def GROUP_ID = 'com.gitee.mahongyin'
+def ARTIFACT_ID = "okhttp"//project.getName()
+group = GROUP_ID
+version = VERSION_NAME
+afterEvaluate {
+    publishing {
+//        singleVariant("release")
+        publications {
+            release(MavenPublication) {
+                from components.release
+                groupId = GROUP_ID
+                artifactId = ARTIFACT_ID
+                version = VERSION_NAME
+            }
+        }
+    }
+}
+
 //android studio 错误: 编码GBK的不可映射字符
 tasks.withType(JavaCompile) {
     options.encoding = "UTF-8"
@@ -24,12 +47,12 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
     classifier = 'javadoc'
     from javadoc.destinationDir
 }
-//task classesJar(type: Jar) {
-//    from "$buildDir/intermediates/classes/release"
-//}
+task classesJar(type: Jar) {
+    from "$buildDir/intermediates/classes/release"
+}
 
 artifacts {
-// archives classesJar
+    archives classesJar
     archives javadocJar
     archives sourcesJar
 }
