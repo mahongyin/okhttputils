@@ -6,22 +6,22 @@ def MAVEN_LOCAL_PATH ='http://tencent.a1000.top:8082/artifactory/local'
 def ARTIFACT_ID = "okhttp"//project.getName()
 def VERSION_NAME = '3.12.13'
 def GROUP_ID = 'com.mhy'
-//直接执行这里
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            repository(url:MAVEN_LOCAL_PATH ){
-                authentication(userName: "${MAVEN_USER}", password:"${MAVEN_PASSWORD}")
-            }
-            pom.project {
-                groupId GROUP_ID
-                artifactId ARTIFACT_ID
-                version VERSION_NAME
-                packaging 'aar'
-            }
-        }
-    }
-}
+//私库直接执行这里
+//uploadArchives {
+//    repositories {
+//        mavenDeployer {
+//            repository(url:MAVEN_LOCAL_PATH ){
+//                authentication(userName: "${MAVEN_USER}", password:"${MAVEN_PASSWORD}")
+//            }
+//            pom.project {
+//                groupId GROUP_ID
+//                artifactId ARTIFACT_ID
+//                version VERSION_NAME
+//                packaging 'aar'
+//            }
+//        }
+//    }
+//}
 /*****************jitpack***************/
 group='com.gitee.mahongyin'
 version = '3.12.13'
