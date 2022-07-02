@@ -1,0 +1,22 @@
+//apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: 'maven-publish'//jitpack
+
+/*****************jitpack***************/
+def VERSION_NAME = '3.12.13'
+def GROUP_ID = 'com.gitee.mahongyin'
+def ARTIFACT_ID = "okhttp"//project.getName()
+group = GROUP_ID
+version = VERSION_NAME
+afterEvaluate {
+    publishing {
+//        singleVariant("release")
+        publications {
+            release(MavenPublication) {
+                from components.release
+                groupId = GROUP_ID
+                artifactId = ARTIFACT_ID
+                version = VERSION_NAME
+            }
+        }
+    }
+}

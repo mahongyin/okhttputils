@@ -2,28 +2,7 @@ apply plugin: 'com.android.library'
 apply plugin: 'maven'
 //添加发布到jitpack脚本
 apply from :"../jitpack.gradle"
-//apply plugin: 'com.github.dcendents.android-maven'
-apply plugin: 'maven-publish'//jitpack
 
-/*****************jitpack***************/
-def VERSION_NAME = '3.12.13'
-def GROUP_ID = 'com.gitee.mahongyin'
-def ARTIFACT_ID = "okhttp"//project.getName()
-group = GROUP_ID
-version = VERSION_NAME
-afterEvaluate {
-    publishing {
-//        singleVariant("release")
-        publications {
-            release(MavenPublication) {
-                from components.release
-                groupId = GROUP_ID
-                artifactId = ARTIFACT_ID
-                version = VERSION_NAME
-            }
-        }
-    }
-}
 //发布到artifactory
 //apply from :"../artifactory.gradle"
 
@@ -32,15 +11,15 @@ task sourcesJar(type: Jar) {
     from android.sourceSets.main.java.sourceFiles
 }
 
-task javadoc(type: Javadoc) {
-    source = android.sourceSets.main.java.sourceFiles
-    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-}
+//task javadoc(type: Javadoc) {
+//    source = android.sourceSets.main.java.sourceFiles
+//    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+//}
 
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
-}
+//task javadocJar(type: Jar, dependsOn: javadoc) {
+//    classifier = 'javadoc'
+//    from javadoc.destinationDir
+//}
 
 task classesJar(type: Jar) {
     from "$buildDir/intermediates/classes/release"
@@ -48,11 +27,11 @@ task classesJar(type: Jar) {
 
 artifacts {
     archives classesJar
-    archives javadocJar
+//    archives javadocJar
     archives sourcesJar
 }
 
-//def VERSION_NAME = '3.12.13'
+def VERSION_NAME = '3.12.13'
 android {
     compileSdkVersion 30
 
