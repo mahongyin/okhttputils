@@ -19,24 +19,23 @@ allprojects {
         jcenter()
         maven { url "https://www.jitpack.io" }
     }
-    tasks.withType(Javadoc) {
-        options {
-            encoding "UTF-8"
-            charSet 'UTF-8'
-            links "http://docs.oracle.com/javase/7/docs/api"
-            failOnError false
-        }
+}
+tasks.withType(Javadoc) {
+    options {
+        encoding "UTF-8"
+        charSet 'UTF-8'
+        links "http://docs.oracle.com/javase/7/docs/api"
+        failOnError false
     }
+}
 //    tasks.withType(Javadoc).all {//不要doc?
 //        enabled = false
 //    }
-    //避免javadoc的检查，防止上传时报错
-    //   tasks.withType(Javadoc) {
-    //      options.addStringOption('Xdoclint:none', '-quiet')
-    //      options.addStringOption('encoding', 'UTF-8')
-    //  }
-
-}
+//避免javadoc的检查，防止上传时报错
+//   tasks.withType(Javadoc) {
+//      options.addStringOption('Xdoclint:none', '-quiet')
+//      options.addStringOption('encoding', 'UTF-8')
+//  }
 //Java编译时采用UTF-8
 tasks.withType(JavaCompile) {
     options.encoding = "UTF-8"
