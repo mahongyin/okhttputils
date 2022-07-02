@@ -4,7 +4,7 @@ apply plugin: 'maven'
 apply from :"../jitpack.gradle"
 
 //发布到artifactory
-//apply from :"../artifactory.gradle"
+apply from :"../artifactory.gradle"
 
 task sourcesJar(type: Jar) {
     classifier = 'sources'
